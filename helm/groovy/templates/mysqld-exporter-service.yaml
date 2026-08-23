@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqld-exporter
+  labels:
+    app: mysqld-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: mysqld-exporter
+  ports:
+    - name: metrics
+      port: {{ .Values.mysqldExporter.port }}
+      targetPort: metrics
+      protocol: TCP

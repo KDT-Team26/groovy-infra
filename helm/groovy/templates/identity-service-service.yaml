@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-service
+  labels:
+    app: identity-service
+spec:
+  type: ClusterIP
+  selector:
+    app: identity-service
+  ports:
+    - name: http
+      port: {{ .Values.identityService.port }}
+      targetPort: {{ .Values.identityService.port }}
+      protocol: TCP

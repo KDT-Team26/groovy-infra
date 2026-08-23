@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  serviceName: mysql
+  replicas: {{ .Values.mysql.replicaCount }}
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: groovy-mysql
+          image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: groovy-config
+            - secretRef:
+                name: groovy-secret
+          env:
+            - name: IDENTITY_SERVICE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: identity-service-secret
+                  key: SPRING_DEV_DB_PASSWORD
+            - name: STUDY_SERVICE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: study-service-secret
+                  key: SPRING_DEV_DB_PASSWORD
+            - name: CONTENT_SERVICE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: content-service-secret
+                  key: SPRING_DEV_DB_PASSWORD
+            - name: CALENDAR_SERVICE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: calendar-service-secret
+                  key: SPRING_DEV_DB_PASSWORD
+            - name: NOTIFICATION_SERVICE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: notification-service-secret
+                  key: SPRING_DEV_DB_PASSWORD
+          ports:
+            - containerPort: {{ .Values.mysql.port }}
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'mysqladmin ping -h localhost -uroot -p"$MYSQL_ROOT_PASSWORD"'
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: groovy-mysql-data
+              mountPath: /var/lib/mysql
+            - name: mysql-init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:
+        - name: groovy-mysql-data
+          persistentVolumeClaim:
+            claimName: groovy-mysql-data
+        - name: mysql-init
+          configMap:
+            name: mysql-init
+            defaultMode: 0555

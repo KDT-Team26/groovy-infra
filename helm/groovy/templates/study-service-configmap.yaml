@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: study-service-config
+  labels:
+    app: study-service
+data:
+  SPRING_DEV_DB_URL: {{ printf "jdbc:mysql://%s:%v/%s?%s" .Values.studyService.database.host .Values.studyService.database.port .Values.studyService.database.name .Values.studyService.database.parameters | quote }}
+  SPRING_DEV_DB_USERNAME: {{ .Values.studyService.database.username | quote }}
+  DB_POOL_MAX_SIZE: {{ .Values.studyService.dbPool.maxSize | quote }}
+  DB_POOL_MIN_IDLE: {{ .Values.studyService.dbPool.minIdle | quote }}
+  JWT_JWKS_URL: {{ .Values.studyService.jwt.jwksUrl | quote }}
+  JWT_JWKS_CONNECT_TIMEOUT_MS: {{ .Values.studyService.jwt.connectTimeoutMs | quote }}
+  JWT_JWKS_READ_TIMEOUT_MS: {{ .Values.studyService.jwt.readTimeoutMs | quote }}
+  JWT_JWKS_CACHE_TTL_SECONDS: {{ .Values.studyService.jwt.cacheTtlSeconds | quote }}
+  IDENTITY_SERVICE_URL: {{ .Values.studyService.identityService.url | quote }}
+  IDENTITY_SERVICE_CONNECT_TIMEOUT_MS: {{ .Values.studyService.identityService.connectTimeoutMs | quote }}
+  IDENTITY_SERVICE_READ_TIMEOUT_MS: {{ .Values.studyService.identityService.readTimeoutMs | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.studyService.kafka.bootstrapServers | quote }}
+  KAFKA_SECURITY_PROTOCOL: {{ .Values.studyService.kafka.securityProtocol | quote }}
+  KAFKA_SASL_MECHANISM: {{ .Values.studyService.kafka.saslMechanism | quote }}
+  CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}
+  TZ: {{ .Values.config.timezone | quote }}

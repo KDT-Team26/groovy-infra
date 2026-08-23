@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: study-service
+  labels:
+    app: study-service
+spec:
+  type: ClusterIP
+  selector:
+    app: study-service
+  ports:
+    - name: http
+      port: {{ .Values.studyService.port }}
+      targetPort: {{ .Values.studyService.port }}
+      protocol: TCP

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  labels:
+    app: api-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: {{ .Values.apiGateway.port }}
+      targetPort: {{ .Values.apiGateway.port }}
+      protocol: TCP
+      # actuator port를 위한 management port 추가 - 변
+    - name: management
+      port: {{ .Values.apiGateway.managementPort }}
+      targetPort: management

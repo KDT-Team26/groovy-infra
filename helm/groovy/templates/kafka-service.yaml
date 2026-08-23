@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+spec:
+  type: ClusterIP
+  selector:
+    app: kafka
+  ports:
+    - name: client
+      protocol: TCP
+      port: {{ .Values.kafka.listeners.clientPort }}
+      targetPort: {{ .Values.kafka.listeners.clientPort }}
+    - name: controller
+      protocol: TCP
+      port: {{ .Values.kafka.listeners.controllerPort }}
+      targetPort: {{ .Values.kafka.listeners.controllerPort }}

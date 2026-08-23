@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  labels:
+    app: kafka
+spec:
+  serviceName: kafka
+  replicas: {{ .Values.kafka.replicaCount }}
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: groovy-kafka
+          image: "{{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}"
+          imagePullPolicy: {{ .Values.kafka.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: kafka-config
+          env:
+            - name: KAFKA_LISTENER_NAME_CLIENT_PLAIN_SASL_JAAS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret
+                  key: broker-jaas-config
+          ports:
+            - name: client
+              containerPort: {{ .Values.kafka.listeners.clientPort }}
+              protocol: TCP
+            - name: controller
+              containerPort: {{ .Values.kafka.listeners.controllerPort }}
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config /tmp/adminclient.conf
+            initialDelaySeconds: 20
+            failureThreshold: 10
+            periodSeconds: 10
+            timeoutSeconds: 10
+          volumeMounts:
+            - name: groovy-kafka-data
+              mountPath: {{ .Values.kafka.persistence.mountPath }}
+            - name: kafka-admin-client-config
+              mountPath: /tmp/adminclient.conf
+              subPath: adminclient.conf
+              readOnly: true
+              
+      volumes:
+        - name: groovy-kafka-data
+          {{- if .Values.kafka.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: groovy-kafka-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: kafka-admin-client-config
+          secret:
+            secretName: kafka-secret

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: content-service
+  labels:
+    app: content-service
+spec:
+  type: ClusterIP
+  selector:
+    app: content-service
+  ports:
+    - name: http
+      port: {{ .Values.contentService.port }}
+      targetPort: {{ .Values.contentService.port }}
+      protocol: TCP

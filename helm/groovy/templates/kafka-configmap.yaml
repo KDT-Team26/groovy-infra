@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  labels:
+    app: kafka
+data:
+  KAFKA_NODE_ID: {{ .Values.kafka.nodeId | quote }}
+  KAFKA_PROCESS_ROLES: {{ .Values.kafka.processRoles | quote }}
+  CLUSTER_ID: {{ .Values.kafka.clusterId | quote }}
+  KAFKA_LISTENERS: {{ printf "%s://:%v,%s://:%v" .Values.kafka.listeners.clientName .Values.kafka.listeners.clientPort .Values.kafka.listeners.controllerName .Values.kafka.listeners.controllerPort | quote }}
+  KAFKA_ADVERTISED_LISTENERS: {{ printf "%s://%s:%v" .Values.kafka.listeners.clientName .Values.kafka.listeners.advertisedHost .Values.kafka.listeners.clientPort | quote }}
+  KAFKA_CONTROLLER_LISTENER_NAMES: {{ .Values.kafka.listeners.controllerName | quote }}
+  KAFKA_CONTROLLER_QUORUM_VOTERS: {{ printf "%v@%s:%v" .Values.kafka.nodeId .Values.kafka.listeners.advertisedHost .Values.kafka.listeners.controllerPort | quote }}
+  KAFKA_INTER_BROKER_LISTENER_NAME: {{ .Values.kafka.listeners.clientName | quote }}
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: {{ .Values.kafka.security.protocolMap | quote }}
+  KAFKA_SASL_ENABLED_MECHANISMS: {{ .Values.kafka.security.saslEnabledMechanisms | quote }}
+  KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: {{ .Values.kafka.security.saslMechanismInterBrokerProtocol | quote }}
+  KAFKA_OPTS: "-Dfile.encoding=UTF-8"
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: {{ .Values.kafka.replication.offsetsTopicFactor | quote }}
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: {{ .Values.kafka.replication.transactionStateLogFactor | quote }}
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: {{ .Values.kafka.replication.transactionStateLogMinIsr | quote }}
+  KAFKA_AUTO_CREATE_TOPICS_ENABLE: {{ .Values.kafka.autoCreateTopics | quote }}
+  KAFKA_LOG_DIRS: {{ .Values.kafka.persistence.mountPath | quote }}

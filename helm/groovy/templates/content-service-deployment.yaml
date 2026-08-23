@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: content-service
+  labels:
+    app: content-service
+spec:
+  replicas: {{ .Values.contentService.replicaCount }}
+  selector:
+    matchLabels:
+      app: content-service
+  template:
+    metadata:
+      labels:
+        app: content-service
+    spec:
+      containers:
+        - name: content-service
+          image: "{{ .Values.contentService.image.repository }}:{{ .Values.contentService.image.tag }}"
+          envFrom:
+            - configMapRef:
+                name: content-service-config
+            - secretRef:
+                name: content-service-secret
+          ports:
+            - containerPort: {{ .Values.contentService.port }}
+              protocol: TCP

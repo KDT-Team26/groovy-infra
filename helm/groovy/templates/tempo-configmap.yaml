@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: groovy-tempo-config
+data:
+  tempo.yaml: |
+    server:
+      http_listen_port: {{ .Values.tempo.httpPort }}
+
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            http:
+              endpoint: "0.0.0.0:{{ .Values.tempo.otlpHttpPort }}"
+
+    storage:
+      trace:
+        backend: local
+        wal:
+          path: /var/tempo/wal
+        local:
+          path: /var/tempo/blocks
+
+    usage_report:
+      reporting_enabled: false

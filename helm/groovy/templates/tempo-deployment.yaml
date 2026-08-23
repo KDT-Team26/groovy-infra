@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo
+  labels:
+    app: tempo
+spec:
+  replicas: {{ .Values.tempo.replicaCount }}
+  selector:
+    matchLabels:
+      app: tempo
+  template:
+    metadata:
+      labels:
+        app: tempo
+    spec:
+      containers:
+        - name: tempo
+          image: "{{ .Values.tempo.image.repository }}:{{ .Values.tempo.image.tag }}"
+          args:
+            - "-config.file=/etc/tempo.yaml"
+          ports:
+            - containerPort: {{ .Values.tempo.httpPort }}
+            - containerPort: {{ .Values.tempo.otlpHttpPort }}
+          volumeMounts:
+            - name: tempo-config
+              mountPath: /etc/tempo.yaml
+              subPath: tempo.yaml
+      volumes:
+        - name: tempo-config
+          configMap:
+            name: groovy-tempo-config
+      restartPolicy: Always

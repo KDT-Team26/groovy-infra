@@ -1,0 +1,30 @@
+# MSA 전환 Phase 12: 레거시 모놀리식의 monitoring/grafana/provisioning/datasources/datasource.yml
+# (Prometheus+Loki)에 Tempo를 더한 버전. 레거시 monitoring/ 디렉토리는 MSA 전환 후 완전히
+# 삭제되어 이 파일이 유일한 datasource 설정이다. Tempo 필드 구성은 Grafana Tempo 공식 예제
+# (grafana/tempo repo, example/docker-compose/single-binary/grafana-datasources.yaml)를 그대로 참고.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    uid: prometheus
+    editable: true
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    uid: loki
+    editable: true
+
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    uid: tempo
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: GET

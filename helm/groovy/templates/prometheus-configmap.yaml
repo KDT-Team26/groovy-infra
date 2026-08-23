@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: groovy-prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+      - job_name: api-gateway
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["api-gateway:{{ .Values.apiGateway.managementPort }}"]
+
+      - job_name: identity-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["identity-service:{{ .Values.identityService.port }}"]
+
+      - job_name: study-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["study-service:{{ .Values.studyService.port }}"]
+
+      - job_name: content-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["content-service:{{ .Values.contentService.port }}"]
+
+      - job_name: calendar-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["calendar-service:{{ .Values.calendarService.port }}"]
+
+      - job_name: notification-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ["notification-service:{{ .Values.notificationService.port }}"]
+
+      - job_name: tempo
+        metrics_path: /metrics
+        static_configs:
+          - targets: ["tempo:{{ .Values.tempo.httpPort }}"]
+
+      - job_name: mysql
+        static_configs:
+          - targets: ["mysqld-exporter:{{ .Values.mysqldExporter.port }}"]
+
+      - job_name: node-exporter
+        static_configs:
+          - targets: ["node-exporter:{{ .Values.nodeExporter.port }}"]
+
+      - job_name: cadvisor
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        metrics_path: /api/v1/nodes/minikube/proxy/metrics/cadvisor
+        static_configs:
+          - targets: ["kubernetes.default.svc:443"]
