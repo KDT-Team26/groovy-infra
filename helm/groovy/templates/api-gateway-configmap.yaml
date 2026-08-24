@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  labels:
+    app: api-gateway
+data:
+  NOTIFICATION_SERVICE_URL: {{ printf "http://notification-service:%v" .Values.notificationService.port | quote }}
+  IDENTITY_SERVICE_URL: {{ printf "http://identity-service:%v" .Values.identityService.port | quote }}
+  STUDY_SERVICE_URL: {{ printf "http://study-service:%v" .Values.studyService.port | quote }}
+  CALENDAR_SERVICE_URL: {{ printf "http://calendar-service:%v" .Values.calendarService.port | quote }}
+  CONTENT_SERVICE_URL: {{ printf "http://content-service:%v" .Values.contentService.port | quote }}
