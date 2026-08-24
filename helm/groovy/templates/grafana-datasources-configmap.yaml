@@ -20,3 +20,10 @@ data:
         editable: true
         jsonData:
           httpMethod: GET
+
+      - name: Loki
+        uid: loki
+        type: loki
+        access: proxy
+        url: http://loki:{{ .Values.loki.port }}
+        editable: true
