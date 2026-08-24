@@ -262,11 +262,18 @@ config:
 
 loki:
   replicaCount: 1
+
   image:
     repository: grafana/loki
     tag: "3.7.0"
     pullPolicy: IfNotPresent
+
   port: 3100
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    mountPath: /loki
 
 alloy:
   replicaCount: 1

@@ -1,10 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: loki
   labels:
     app: loki
 spec:
+  serviceName: loki
   replicas: {{ .Values.loki.replicaCount }}
   selector:
     matchLabels:
@@ -42,4 +43,5 @@ spec:
           configMap:
             name: loki-config
         - name: storage
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: groovy-loki-data
