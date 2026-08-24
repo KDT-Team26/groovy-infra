@@ -22,6 +22,12 @@ spec:
                 name: notification-service-config
             - secretRef:
                 name: notification-service-secret
+          env:
+            - name: KAFKA_SASL_JAAS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret
+                  key: app-jaas-config
           ports:
             - containerPort: {{ .Values.notificationService.port }}
               protocol: TCP

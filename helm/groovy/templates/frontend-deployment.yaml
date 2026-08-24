@@ -18,6 +18,9 @@ spec:
         - name: groovy-frontend
           image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: frontend-config
           ports:
             - containerPort: {{ .Values.frontend.port }}
               protocol: TCP
