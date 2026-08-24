@@ -2,9 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: alloy
-  namespace: monitoring
+  labels:
+    app: alloy
 spec:
-  replicas: 1
+  replicas: {{ .Values.alloy.replicaCount }}
   selector:
     matchLabels:
       app: alloy
@@ -16,13 +17,14 @@ spec:
       serviceAccountName: alloy
       containers:
         - name: alloy
-          image: grafana/alloy:latest
+          image: "{{ .Values.alloy.image.repository }}:{{ .Values.alloy.image.tag }}"
+          imagePullPolicy: {{ .Values.alloy.image.pullPolicy }}
           args:
             - run
             - /etc/alloy/config.alloy
-            - --server.http.listen-addr=0.0.0.0:12345
+            - --server.http.listen-addr=0.0.0.0:{{ .Values.alloy.port }}
           ports:
-            - containerPort: 12345
+            - containerPort: {{ .Values.alloy.port }}
               name: http
           volumeMounts:
             - name: config

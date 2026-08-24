@@ -2,9 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: loki
-  namespace: monitoring
+  labels:
+    app: loki
 spec:
-  replicas: 1
+  replicas: {{ .Values.loki.replicaCount }}
   selector:
     matchLabels:
       app: loki
@@ -17,16 +18,17 @@ spec:
         fsGroup: 10001
       containers:
         - name: loki
-          image: grafana/loki:3.7.0
+          image: "{{ .Values.loki.image.repository }}:{{ .Values.loki.image.tag }}"
+          imagePullPolicy: {{ .Values.loki.image.pullPolicy }}
           args:
             - "-config.file=/etc/loki/config.yaml"
           ports:
             - name: http
-              containerPort: 3100
+              containerPort: {{ .Values.loki.port }}
           readinessProbe:
             httpGet:
               path: /ready
-              port: 3100
+              port: {{ .Values.loki.port }}
             initialDelaySeconds: 5
             periodSeconds: 5
           volumeMounts:
@@ -41,16 +43,3 @@ spec:
             name: loki-config
         - name: storage
           emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: loki
-  namespace: monitoring
-spec:
-  selector:
-    app: loki
-  ports:
-    - name: http
-      port: 3100
-      targetPort: 3100

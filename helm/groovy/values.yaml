@@ -259,3 +259,19 @@ config:
   timezone: "Asia/Seoul"
 
   grafanaAdminUser: "admin"
+
+loki:
+  replicaCount: 1
+  image:
+    repository: grafana/loki
+    tag: "3.7.0"
+    pullPolicy: IfNotPresent
+  port: 3100
+
+alloy:
+  replicaCount: 1
+  image:
+    repository: grafana/alloy
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 12345
