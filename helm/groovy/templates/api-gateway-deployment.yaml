@@ -17,6 +17,9 @@ spec:
       containers:
         - name: api-gateway
           image: "{{ .Values.apiGateway.image.repository }}:{{ .Values.apiGateway.image.tag }}"
+          envFrom:
+            - configMapRef:
+                name: api-gateway-config
           ports:
             - containerPort: {{ .Values.apiGateway.port }}
               protocol: TCP
