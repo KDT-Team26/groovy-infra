@@ -25,7 +25,7 @@ spec:
             - name: MYSQLD_EXPORTER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: groovy-secret
+                  name: mysql-secret
                   key: MYSQL_ROOT_PASSWORD
           ports:
             - name: metrics

@@ -21,9 +21,9 @@ spec:
           imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
           envFrom:
             - configMapRef:
-                name: groovy-config
+                name: mysql-config
             - secretRef:
-                name: groovy-secret
+                name: mysql-secret
           env:
             - name: IDENTITY_SERVICE_DB_PASSWORD
               valueFrom:

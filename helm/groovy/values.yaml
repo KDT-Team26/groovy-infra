@@ -247,14 +247,6 @@ tempo:
   otlpHttpPort: 4318
 
 config:
-  mysqlDatabase: "groovy"
-  mysqlUsername: "root"
-  redisHost: "redis"
-
-  dbPool:
-    maxSize: "30"
-    minIdle: "10"
-
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
 

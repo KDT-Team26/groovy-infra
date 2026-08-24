@@ -22,9 +22,9 @@ spec:
               protocol: TCP
           envFrom:
             - configMapRef:
-                name: groovy-config # admin
+                name: grafana-config # admin
             - secretRef:
-                name: groovy-secret # admin password
+                name: grafana-secret # admin password
           volumeMounts:
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
