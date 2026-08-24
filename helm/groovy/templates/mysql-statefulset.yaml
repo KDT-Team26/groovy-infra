@@ -24,32 +24,6 @@ spec:
                 name: mysql-config
             - secretRef:
                 name: mysql-secret
-          env:
-            - name: IDENTITY_SERVICE_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: identity-service-secret
-                  key: SPRING_DEV_DB_PASSWORD
-            - name: STUDY_SERVICE_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: study-service-secret
-                  key: SPRING_DEV_DB_PASSWORD
-            - name: CONTENT_SERVICE_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: content-service-secret
-                  key: SPRING_DEV_DB_PASSWORD
-            - name: CALENDAR_SERVICE_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: calendar-service-secret
-                  key: SPRING_DEV_DB_PASSWORD
-            - name: NOTIFICATION_SERVICE_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: notification-service-secret
-                  key: SPRING_DEV_DB_PASSWORD
           ports:
             - containerPort: {{ .Values.mysql.port }}
               protocol: TCP
@@ -65,14 +39,7 @@ spec:
           volumeMounts:
             - name: groovy-mysql-data
               mountPath: /var/lib/mysql
-            - name: mysql-init
-              mountPath: /docker-entrypoint-initdb.d
-              readOnly: true
       volumes:
         - name: groovy-mysql-data
           persistentVolumeClaim:
             claimName: groovy-mysql-data
-        - name: mysql-init
-          configMap:
-            name: mysql-init
-            defaultMode: 0555
