@@ -22,6 +22,12 @@ spec:
                 name: study-service-config
             - secretRef:
                 name: study-service-secret
+          env:
+            - name: KAFKA_SASL_JAAS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret
+                  key: app-jaas-config
           ports:
             - containerPort: {{ .Values.studyService.port }}
               protocol: TCP
