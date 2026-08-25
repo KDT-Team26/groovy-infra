@@ -1,0 +1,19 @@
+identityService:
+  replicaCount: 1
+  image:
+    repository: khg1115/groovy-identity-service
+    tag: "msa-v1"
+  port: 8081
+  database:
+    host: mysql
+    port: 3306
+    name: identity_db
+    username: identity_service
+    parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
+  dbPool:
+    maxSize: "10"
+    minIdle: "2"
+
+config:
+  corsAllowedOrigins: "http://localhost:5173"
+  timezone: "Asia/Seoul"

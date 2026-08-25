@@ -1,0 +1,6 @@
+apiVersion: v2
+name: calendar-service
+description: Helm chart for Groovy calendar-service
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

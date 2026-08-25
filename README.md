@@ -20,7 +20,7 @@
 
 | 대상 | 이유 |
 |---|---|
-| `helm/` | 6개 백엔드 서비스(`api-gateway`/`identity`/`study`/`content`/`calendar`/`notification`) + `frontend` + `mysql`/`redis`/`kafka` + 모니터링 스택(`prometheus`/`grafana`/`tempo`/exporter들)까지 전부 서비스 단위 템플릿으로 완비된 **k8s 배포의 단일 소스**. 서비스 간 통신도 k8s Service DNS(`http://identity-service:8081` 등) 기준이라 소스 경로 결합이 없어 그대로 이관 가능. |
+| `helm/` | 6개 백엔드 서비스(`api-gateway`/`identity`/`study`/`content`/`calendar`/`notification`) + `frontend` + `mysql`/`redis`/`kafka`(`platform`) + 모니터링 스택(`observability`: `prometheus`/`grafana`/`tempo`/`loki`/`alloy`/exporter들)까지 전부 서비스 단위 템플릿으로 완비된 **k8s 배포의 단일 소스**. 서비스 간 통신도 k8s Service DNS(`http://identity-service:8081` 등) 기준이라 소스 경로 결합이 없어 그대로 이관 가능. **(GitOps 빌드 지시서 Phase 03 완료: 원래 단일 통합 차트였던 `helm/groovy/`를 9개 독립 차트(`helm/<chart>/Chart.yaml`+`values.yaml`+`templates/`)로 분리함 — ArgoCD의 서비스 단위 Application 분리를 위한 전제조건.)** |
 | `mysql-init/` | 서비스별(`identity`/`study`/`content`/`calendar`/`notification`) 스키마 + 전용 계정 생성 스크립트. 테이블 스키마 자체는 각 서비스가 Flyway로 소유하지만, **컨테이너 최초 프로비저닝(DB+계정 생성)** 은 공유 인프라 소관이라는 계획서 4장 방침에 따름. |
 | `kafka-init/` | Kafka SASL 클라이언트 인증 설정(`adminclient.conf`). 특정 서비스 소유가 아닌 공용 브로커 설정. |
 | `monitoring-msa/` | Prometheus/Grafana/Tempo/Loki/Alloy 로컬 스택 설정. 스크레이프 job이 이미 서비스명 기준으로 분리돼 있어(`job_name: calendar-service` 등) 레포 분리와 무관하게 동작. |
@@ -43,16 +43,16 @@
 | `docs/transfer/*.md` | poly 레포 "전환 작업 그 자체"의 격리 판단·검증 기록(서비스별). 이미 각 서비스 poly 레포 README에 핵심 내용이 반영됐고, 인프라가 아니라 전환 프로젝트 메타기록이라 제외. |
 | `docs/원본 레포 통합 시 주의점.md` | 로컬 개발용 저장소 설정을 운영 서버로 "역통합"할 때의 체크리스트. 지금 하는 작업(운영과 무관한 인프라 분리)과 반대 방향의 문서라 제외. |
 | `docs/images/*.png` | 루트 `README.md`의 아키텍처 다이어그램 첨부 이미지. 이관 대상 문서 어디에서도 참조되지 않아 제외. |
-| `helm/groovy/values-secret.yaml` (실존하지 않음) | `.gitignore`에 의해 애초에 커밋되지 않는 실제 시크릿 파일. 예시 파일(`values-secret.example.yaml`)만 포함. |
+| `helm/<chart>/values-secret.yaml` (실존하지 않음) | `.gitignore`에 의해 애초에 커밋되지 않는 실제 시크릿 파일. 차트별 예시 파일(`values-secret.example.yaml`)만 포함. |
 
 ## 4. "MSA + k8s + poly" 운영을 위해 수정해야 할 영역
 
 | 영역 | 무엇을, 어떻게 |
 |---|---|
-| **이미지 레지스트리 네임스페이스 통일** | `helm/groovy/values.yaml`·`values.amd64.yaml`이 보는 이미지가 `khg1115/groovy-*`(수동 빌드 스냅샷)인데, poly 서비스 레포들의 (현재 비활성화된) CI는 `bebeghi/groovy-*`로 push하도록 되어 있음. 둘 중 하나로 정하고 `values*.yaml`의 `repository` 필드를 그 값으로 갱신해야 함. |
+| **이미지 레지스트리 네임스페이스 통일** | 각 서비스 차트의 `helm/<service>/values.yaml`·`values.amd64.yaml`이 보는 이미지가 `khg1115/groovy-*`(수동 빌드 스냅샷)인데, poly 서비스 레포들의 (현재 비활성화된) CI는 `bebeghi/groovy-*`로 push하도록 되어 있음. 둘 중 하나로 정하고 `values*.yaml`의 `repository` 필드를 그 값으로 갱신해야 함. |
 | **poly 서비스/프론트 레포의 로컬 개발 문서 갱신** | 각 서비스 README가 "전체 스택은 원본 `Groovy` 레포의 `docker-compose.local.yml` 사용 권장"이라고 되어 있는데, docker-compose가 제거됐으므로 `helm/`(이 레포) 기준 k8s 로컬 실행 방법을 안내하도록 바꿔야 함(이 레포 자체가 아니라 poly 서비스 레포 쪽 수정 사항). |
 | **서비스 CI 활성화** | poly 7개 레포(`groovy-frontend` + 6개 서비스)의 `.github/workflows/docker-build-push.yml.disabled`를 활성화하고, 각 GitHub 레포에 `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` 시크릿을 새로 등록해야 함(모놀리식 레포 시크릿은 자동 상속 안 됨). 활성화 시 워크플로우 상단에 이미 박혀 있는 TODO(`@SpringBootTest` 통합 테스트를 CI에서 어떻게 돌릴지 미정)도 함께 정책 결정 필요. |
 | **ArgoCD 기반 CD 신설** | 지금 이 레포엔 ArgoCD `Application`/`AppProject` 매니페스트가 전혀 없음. 서비스 CI가 이미지를 푸시하면 이 레포의 이미지 태그를 갱신하고, ArgoCD가 그 변경을 감지해 클러스터에 동기화하는 GitOps 파이프라인(계획서 5장)을 이 레포 안에 새로 구성해야 함. |
-| **외부 진입점(Ingress) + 인증서 자동화 신설** | `helm/groovy/templates/`에 `Ingress`/TLS 관련 리소스가 전혀 없고, `api-gateway-service`/`frontend-service` 모두 `ClusterIP`라 클러스터 밖에서 접근할 방법이 아예 없음. `Ingress`(또는 추후 Istio `Gateway`) + `cert-manager`(Let's Encrypt ACME 자동 발급/갱신)를 새로 추가해야 함. |
+| **외부 진입점(Ingress) + 인증서 자동화 신설** | `helm/api-gateway/templates/`·`helm/frontend/templates/`에 `Ingress`/TLS 관련 리소스가 전혀 없고, `api-gateway-service`/`frontend-service` 모두 `ClusterIP`라 클러스터 밖에서 접근할 방법이 아예 없음. `Ingress`(또는 추후 Istio `Gateway`) + `cert-manager`(Let's Encrypt ACME 자동 발급/갱신)를 새로 추가해야 함. |
 | **레거시 raw manifest 최종 정리** | `helm/`이 사실상 유일한 활성 배포 경로이므로, 원본 레포의 `k8s/`, `k8s-local/`는 이 레포로 옮기지 않기로 확정한 만큼 원본 쪽에서 삭제할지 보류할지 별도로 결정. |
 
