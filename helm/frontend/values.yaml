@@ -1,7 +1,7 @@
 frontend:
   replicaCount: 1
   image:
-    repository: khg1115/groovy-frontend
+    repository: ttt103/groovy-frontend
     tag: "msa-v2-arm64"
     pullPolicy: Always
   port: 5173

@@ -1,7 +1,7 @@
 contentService:
   replicaCount: 1
   image:
-    repository: khg1115/groovy-content-service
+    repository: ttt103/groovy-content-service
     tag: "msa-v1"
   port: 8083
   database:

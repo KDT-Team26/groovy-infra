@@ -1,7 +1,9 @@
 apiGateway:
   replicaCount: 1
   image:
-    repository: khg1115/groovy-api-gateway
+    # Docker Hub 리포지토리명은 groovy-gateway-service(서비스 레포명과 동일)로 생성됐다 —
+    # 차트/values 키 이름은 api-gateway/apiGateway를 그대로 쓰지만 이미지 리포지토리명만 다르다.
+    repository: ttt103/groovy-gateway-service
     tag: "msa-v1"
   port: 8080
   managementPort: 8090 # actuator port로 새로 하나 만들었습니다. - 변
