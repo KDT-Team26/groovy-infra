@@ -1,0 +1,29 @@
+# sync wave 5 — 마지막. prometheus가 각 서비스의 /actuator/prometheus를 스크레이프하므로 그
+# 서비스들이 먼저 떠 있는 편이 낫고, mysqld-exporter도 platform(mysql)에 의존한다.
+# Alertmanager는 지시서 방침대로 이 차트에 포함하지 않고 별도 보류 상태로 둔다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/KDT-Team26/groovy-infra.git
+    targetRevision: main
+    path: helm/observability
+    helm:
+      valueFiles:
+        - values.yaml
+        # values-secret.yaml(secret.grafanaAdminPassword)은 별도 주입 필요.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
