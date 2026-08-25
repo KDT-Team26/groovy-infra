@@ -55,4 +55,3 @@
 | **ArgoCD 기반 CD 신설** | 지금 이 레포엔 ArgoCD `Application`/`AppProject` 매니페스트가 전혀 없음. 서비스 CI가 이미지를 푸시하면 이 레포의 이미지 태그를 갱신하고, ArgoCD가 그 변경을 감지해 클러스터에 동기화하는 GitOps 파이프라인(계획서 5장)을 이 레포 안에 새로 구성해야 함. |
 | **외부 진입점(Ingress) + 인증서 자동화 신설** | `helm/groovy/templates/`에 `Ingress`/TLS 관련 리소스가 전혀 없고, `api-gateway-service`/`frontend-service` 모두 `ClusterIP`라 클러스터 밖에서 접근할 방법이 아예 없음. `Ingress`(또는 추후 Istio `Gateway`) + `cert-manager`(Let's Encrypt ACME 자동 발급/갱신)를 새로 추가해야 함. |
 | **레거시 raw manifest 최종 정리** | `helm/`이 사실상 유일한 활성 배포 경로이므로, 원본 레포의 `k8s/`, `k8s-local/`는 이 레포로 옮기지 않기로 확정한 만큼 원본 쪽에서 삭제할지 보류할지 별도로 결정. |
-
