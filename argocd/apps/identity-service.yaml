@@ -16,10 +16,10 @@ spec:
     helm:
       valueFiles:
         - values.yaml
-        # mini PC가 amd64라면 아래 줄 주석을 해제한다(기본 values.yaml은 arm64 태그 기준).
-        # - values.amd64.yaml
-        # values-secret.yaml(secret.identityService.dbPassword)은 platform.yaml과 동일한 이유로
-        # 이 경로에서 읽을 수 없다 — 최초 sync 전 별도 주입 필요, platform의 동일 값과 일치해야 함.
+        - values.amd64.yaml  # mini PC 확정: amd64 (2026-08-26)
+        # 시크릿(secret.identityService.dbPassword)은 Sealed Secrets로 전환됨(2026-08-26) —
+        # values-secret.yaml 별도 주입 불필요, 이 values.yaml의 sealedSecretData.identityService.dbPassword에
+        # 암호화된 값을 직접 넣는다(argocd/bootstrap/seal-secret-values.sh). platform의 동일 값과 일치해야 함.
   # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
   # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야
   # 서비스 간 short-name DNS(mysql, identity-service 등)가 같은 네임스페이스 안에서 계속
