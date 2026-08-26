@@ -2,7 +2,7 @@ studyService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-study-service
-    tag: "msa-v1"
+    tag: "fee36e74da409e1370df908785b06fee21cc50f8"
   port: 8082
   resources:
     requests:
