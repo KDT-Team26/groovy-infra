@@ -7,3 +7,4 @@ metadata:
 data:
   GF_SECURITY_ADMIN_USER: {{ .Values.config.grafanaAdminUser | quote }}
   TZ: {{ .Values.config.timezone | quote }}
+  GF_FEATURE_TOGGLES_ENABLE: "traceqlSearch"

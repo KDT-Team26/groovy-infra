@@ -1,0 +1,356 @@
+{
+  "title": "Trace & 로그 탐색기",
+  "uid": "trace-explorer",
+  "schemaVersion": 39,
+  "editable": true,
+  "timezone": "browser",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "tags": [
+    "groovy",
+    "trace",
+    "tempo",
+    "loki",
+    "logs"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "traceId",
+        "type": "textbox",
+        "label": "Trace ID",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "description": "아래 'Trace 검색' 표에서 관심 있는 trace ID를 복사해서 붙여넣으면 상세 스팬 + 관련 로그가 같이 나온다."
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 10,
+      "type": "row",
+      "title": "Trace 검색 (에러/느린 요청 먼저 찾기)",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 11,
+      "type": "traces",
+      "title": "최근 에러 트레이스",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceqlSearch",
+          "query": "{ status = error }",
+          "limit": 20
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "traces",
+      "title": "느린 트레이스 (500ms 이상)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceqlSearch",
+          "query": "{ duration > 500ms }",
+          "limit": 20
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "Trace 상세 조회",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      }
+    },
+    {
+      "id": 21,
+      "type": "traces",
+      "title": "Trace 상세 (Tempo)",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "datasource": {
+        "type": "tempo",
+        "uid": "tempo"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "tempo",
+            "uid": "tempo"
+          },
+          "queryType": "traceId",
+          "query": "$traceId"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "logs",
+      "title": "해당 Trace의 서비스별 로그 (Loki)",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Ascending"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | traceId=\"$traceId\""
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "type": "row",
+      "title": "전체 로그 브라우징 (특정 trace 상관없이)",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      }
+    },
+    {
+      "id": 31,
+      "type": "logs",
+      "title": "INFO",
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 31
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"INFO\""
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "type": "logs",
+      "title": "WARN",
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 8,
+        "y": 31
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"WARN\""
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "type": "logs",
+      "title": "ERROR",
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 31
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"ERROR\""
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "type": "timeseries",
+      "title": "레벨별 로그 건수 (1분 단위)",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "INFO"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "WARN"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ERROR"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (level) (count_over_time({container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" [1m]))",
+          "legendFormat": "{{level}}"
+        }
+      ]
+    }
+  ]
+}

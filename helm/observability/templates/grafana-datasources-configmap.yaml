@@ -7,6 +7,7 @@ data:
     apiVersion: 1
     datasources:
       - name: Prometheus
+        uid: prometheus
         type: prometheus
         access: proxy
         url: http://prometheus:{{ .Values.prometheus.port }}
@@ -14,6 +15,7 @@ data:
         editable: true
 
       - name: Tempo
+        uid: tempo
         type: tempo
         access: proxy
         url: http://tempo:{{ .Values.tempo.httpPort }}
