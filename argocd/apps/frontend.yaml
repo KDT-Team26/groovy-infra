@@ -15,8 +15,10 @@ spec:
     helm:
       valueFiles:
         - values.yaml
-        - values.amd64.yaml  # mini PC 확정: amd64 (2026-08-26). 기본 values.yaml의 frontend 태그는
-        # arm64 기준이라, amd64 오버라이드는 특이하게 태그에 접미사가 없다(msa-v2, -amd64 접미사 없음).
+        # values.amd64.yaml는 삭제함(2026-08-26) — CI(build-and-deploy.yml)가 platforms 지정
+        # 없이 GitHub Actions 러너(ubuntu-latest=amd64) 기준으로만 빌드하므로 values.yaml의
+        # image.tag가 이미 amd64 이미지다. amd64 오버라이드가 CI가 갱신한 정확한 sha 태그를
+        # 빌드된 적 없는 옛 placeholder 태그로 덮어써 ImagePullBackOff를 냈던 게 원인이었다.
         # 이 차트는 values-secret가 없다(정적 SPA, DB/시크릿 의존 없음).
   # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
   # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야

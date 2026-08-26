@@ -1,3 +1,0 @@
-studyService:
-  image:
-    tag: "msa-v1-amd64"
