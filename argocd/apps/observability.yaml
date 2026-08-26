@@ -33,3 +33,9 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # 2026-08-26: 대시보드 JSON들(특히 integration_dashboard.json 4200줄+)이 커지면서
+      # groovy-grafana-dashboards ConfigMap을 client-side apply로 적용하면
+      # kubectl.kubernetes.io/last-applied-configuration 어노테이션이 256KB 제한을 넘어
+      # sync가 계속 실패했다(ArgoCD 자체 설치 때 겪은 CRD 크기 문제와 동일 원인).
+      # server-side apply는 그 어노테이션을 안 쓰므로 리소스 크기와 무관하게 안전하다.
+      - ServerSideApply=true
