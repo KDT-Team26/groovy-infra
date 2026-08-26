@@ -1,0 +1,32 @@
+calendarService:
+  replicaCount: 1
+  image:
+    repository: ttt103/groovy-calendar-service
+    tag: "msa-v1"
+  port: 8084
+  database:
+    host: mysql
+    port: 3306
+    name: calendar_db
+    username: calendar_service
+    parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
+  dbPool:
+    maxSize: "10"
+    minIdle: "2"
+  jwt:
+    jwksUrl: "http://identity-service:8081/.well-known/jwks.json"
+    connectTimeoutMs: "2000"
+    readTimeoutMs: "3000"
+    cacheTtlSeconds: "300"
+  studyService:
+    url: "http://study-service:8082"
+    connectTimeoutMs: "2000"
+    readTimeoutMs: "3000"
+  kafka:
+    bootstrapServers: "kafka:9092"
+    securityProtocol: "SASL_PLAINTEXT"
+    saslMechanism: "PLAIN"
+
+config:
+  corsAllowedOrigins: "http://localhost:5173"
+  timezone: "Asia/Seoul"

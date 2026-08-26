@@ -1,0 +1,33 @@
+notificationService:
+  replicaCount: 1
+  image:
+    repository: ttt103/groovy-notification-service
+    tag: "msa-v1"
+  port: 8085
+  database:
+    host: mysql
+    port: 3306
+    name: notification_db
+    username: notification_service
+    parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
+  dbPool:
+    maxSize: "10"
+    minIdle: "2"
+  jwt:
+    jwksUrl: "http://identity-service:8081/.well-known/jwks.json"
+    connectTimeoutMs: "2000"
+    readTimeoutMs: "3000"
+    cacheTtlSeconds: "300"
+  redis:
+    host: redis
+    port: 6379
+  kafka:
+    bootstrapServers: "kafka:9092"
+    securityProtocol: "SASL_PLAINTEXT"
+    saslMechanism: "PLAIN"
+    topic: "notification-events"
+
+# 다른 서비스 차트와 달리 corsAllowedOrigins는 쓰지 않는다(이 서비스는 프론트가 직접 호출하지
+# 않고 게이트웨이를 경유하는 REST + SSE 뿐이라 CORS_ALLOWED_ORIGINS 환경변수 자체가 없다).
+config:
+  timezone: "Asia/Seoul"

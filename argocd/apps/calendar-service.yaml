@@ -1,0 +1,29 @@
+# sync wave 3 — study-service에 의존(앞선 wave에서 이미 떠 있음).
+# content/notification-service, api-gateway와 같은 wave: 서로 의존관계가 없어 병렬로 떠도 된다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: calendar-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/KDT-Team26/groovy-infra.git
+    targetRevision: main
+    path: helm/calendar-service
+    helm:
+      valueFiles:
+        - values.yaml
+        # - values.amd64.yaml  # mini PC가 amd64라면 주석 해제
+        # values-secret.yaml(secret.calendarService.dbPassword)은 별도 주입 필요, platform과 값 일치.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

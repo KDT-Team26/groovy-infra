@@ -1,0 +1,55 @@
+kafka:
+  replicaCount: 1
+  image:
+    repository: apache/kafka
+    tag: "4.3.1"
+    pullPolicy: IfNotPresent
+  nodeId: 1
+  processRoles: "broker,controller"
+  clusterId: "4L6g3nShT-eMCtK--X86sw"
+  listeners:
+    clientName: CLIENT
+    controllerName: CONTROLLER
+    clientPort: 9092
+    controllerPort: 9093
+    advertisedHost: kafka
+  security:
+    protocolMap: "CONTROLLER:PLAINTEXT,CLIENT:SASL_PLAINTEXT"
+    saslEnabledMechanisms: "PLAIN"
+    saslMechanismInterBrokerProtocol: "PLAIN"
+    brokerUsername: "broker"
+    applicationUsername: "app"
+  replication:
+    offsetsTopicFactor: 1
+    transactionStateLogFactor: 1
+    transactionStateLogMinIsr: 1
+  autoCreateTopics: "true"
+  persistence:
+    enabled: false
+    size: 1Gi
+    mountPath: /var/lib/kafka/data
+
+mysql:
+  replicaCount: 1
+  image:
+    repository: mysql
+    tag: "8.0"
+    pullPolicy: IfNotPresent
+  port: 3306
+  persistence:
+    size: 100Mi
+
+redis:
+  replicaCount: 1
+  image:
+    repository: redis
+    tag: "7-alpine"
+    pullPolicy: IfNotPresent
+  port: 6379
+  persistence:
+    size: 100Mi
+
+# mysql-config.yaml이 TZ 환경변수로 참조한다. 서비스별 차트에도 동일 값이 각자 존재한다
+# (차트 독립성 우선, 단일 진실 공급원은 이 값들의 "원본 의도"인 GitOps 지시서 문서다).
+config:
+  timezone: "Asia/Seoul"

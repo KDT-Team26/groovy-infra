@@ -1,0 +1,31 @@
+# sync wave 1 — JWT 발급자. platform(mysql)이 떠 있어야 하고, 나머지 서비스가 이 서비스의
+# JWKS를 참조하므로 가장 먼저 뜬다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: identity-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/KDT-Team26/groovy-infra.git
+    targetRevision: main
+    path: helm/identity-service
+    helm:
+      valueFiles:
+        - values.yaml
+        # mini PC가 amd64라면 아래 줄 주석을 해제한다(기본 values.yaml은 arm64 태그 기준).
+        # - values.amd64.yaml
+        # values-secret.yaml(secret.identityService.dbPassword)은 platform.yaml과 동일한 이유로
+        # 이 경로에서 읽을 수 없다 — 최초 sync 전 별도 주입 필요, platform의 동일 값과 일치해야 함.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
