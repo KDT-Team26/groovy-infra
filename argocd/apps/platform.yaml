@@ -15,11 +15,10 @@ spec:
     helm:
       valueFiles:
         - values.yaml
-        # values-secret.yaml(mysqlRootPassword, mysql.provisionerPassword, 5개 서비스
-        # dbPassword, kafka 자격증명)은 .gitignore 대상이라 이 레포 경로에서 읽을 수 없다.
-        # 최초 sync 전에 반드시 별도 경로로 실제 값을 주입해야 한다 — 방법(예: ArgoCD가 접근
-        # 가능한 프라이빗 값 저장소, 혹은 클러스터에 Secret을 미리 kubectl apply)은 Phase 05/06에서
-        # 확정한다. 이 값이 없으면 mysql-secret.yaml 등의 `required` 검증에서 sync가 실패한다.
+        # 시크릿(mysqlRootPassword, mysql.provisionerPassword, 5개 서비스 dbPassword, kafka
+        # 자격증명)은 Sealed Secrets로 전환됨(2026-08-26) — 이 values.yaml의 sealedSecretData.*
+        # 아래에 암호화된 값을 직접 넣는다(argocd/bootstrap/seal-secret-values.sh). 값이 없으면
+        # mysql-secret.yaml 등의 `required` 검증에서 sync가 실패한다(의도된 동작).
   # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
   # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야
   # 서비스 간 short-name DNS(mysql, identity-service 등)가 같은 네임스페이스 안에서 계속
