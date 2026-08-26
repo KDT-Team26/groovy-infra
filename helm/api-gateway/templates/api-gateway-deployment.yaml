@@ -26,3 +26,7 @@ spec:
               # actuator port를 위한 management port 추가 - 변
             - containerPort: {{ .Values.apiGateway.managementPort }}
               name: management
+          {{- if .Values.apiGateway.resources }}
+          resources:
+            {{- toYaml .Values.apiGateway.resources | nindent 12 }}
+          {{- end }}

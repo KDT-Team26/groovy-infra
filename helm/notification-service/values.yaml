@@ -4,6 +4,13 @@ notificationService:
     repository: ttt103/groovy-notification-service
     tag: "msa-v1"
   port: 8085
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
   database:
     host: mysql
     port: 3306

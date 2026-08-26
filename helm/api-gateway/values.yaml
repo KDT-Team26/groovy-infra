@@ -7,6 +7,13 @@ apiGateway:
     tag: "msa-v1"
   port: 8080
   managementPort: 8090 # actuator port로 새로 하나 만들었습니다. - 변
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "300m"
+      memory: "512Mi"
 
 # api-gateway-configmap.yaml이 각 서비스의 ClusterIP DNS 이름(서비스명은 각 서비스 차트가
 # Service 리소스명으로 고정하므로 안 바뀐다)과 포트를 조합해 라우팅 대상 URL을 만든다.
