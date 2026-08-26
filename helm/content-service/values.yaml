@@ -2,7 +2,7 @@ contentService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-content-service
-    tag: "msa-v1"
+    tag: "3cdf206df8bb3681b8855359a8054ce9248f68c7"
   port: 8083
   resources:
     requests:
