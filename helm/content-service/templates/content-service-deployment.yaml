@@ -31,3 +31,7 @@ spec:
           ports:
             - containerPort: {{ .Values.contentService.port }}
               protocol: TCP
+          {{- if .Values.contentService.resources }}
+          resources:
+            {{- toYaml .Values.contentService.resources | nindent 12 }}
+          {{- end }}

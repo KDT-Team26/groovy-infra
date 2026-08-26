@@ -31,3 +31,7 @@ spec:
           ports:
             - containerPort: {{ .Values.notificationService.port }}
               protocol: TCP
+          {{- if .Values.notificationService.resources }}
+          resources:
+            {{- toYaml .Values.notificationService.resources | nindent 12 }}
+          {{- end }}
