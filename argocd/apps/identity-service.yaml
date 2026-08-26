@@ -20,9 +20,13 @@ spec:
         # - values.amd64.yaml
         # values-secret.yaml(secret.identityService.dbPassword)은 platform.yaml과 동일한 이유로
         # 이 경로에서 읽을 수 없다 — 최초 sync 전 별도 주입 필요, platform의 동일 값과 일치해야 함.
+  # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
+  # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야
+  # 서비스 간 short-name DNS(mysql, identity-service 등)가 같은 네임스페이스 안에서 계속
+  # 해석된다 — 하나라도 다른 네임스페이스로 빠지면 그 서비스만 접속이 끊긴다.
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: groovy-kubernates
   syncPolicy:
     automated:
       prune: true

@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# GitOps 빌드 지시서 Phase 05 부속 — 9개 차트의 시크릿 값을 이 클러스터의 sealed-secrets
+# 공개키로 암호화해서, 각 차트 values.yaml의 sealedSecretData.* 에 붙여넣을 YAML 조각을
+# 출력해준다. install-argocd.sh의 STEP 5(sealed-secrets 컨트롤러 설치)가 끝난 뒤에만 동작한다
+# — kubeseal이 기본적으로 현재 kubectl context의 컨트롤러에서 공개키를 직접 가져오기 때문이다.
+#
+# 이 스크립트는 클러스터에 아무것도 적용(apply)하지 않는다 — 순수하게 "평문 -> 암호문" 변환만
+# 하고 결과를 화면에 출력한다. 그 출력을 사람이 직접 확인하고 values.yaml에 붙여넣는 방식이다.
+#
+# 실제로 필요한 값은 딱 10개뿐이다(서비스 DB 비밀번호 5 + grafana 1 + mysql 2 + kafka 2).
+# db-init용 SQL에도 같은 서비스 비밀번호가 또 들어가지만, 이 스크립트는 한 번 입력받은 값을
+# 재사용만 하지 다시 묻지 않는다(재입력을 시키면 오히려 오타로 두 곳 값이 달라질 위험만 커짐).
+#
+# 사용법 — 대화형(하나씩 프롬프트):
+#   ./seal-secret-values.sh
+#
+# 사용법 — 비대화형(전부 환경변수로 한 번에, 반복 설치·CI 등에 유용):
+#   SVC_IDENTITY_DB_PW=... SVC_STUDY_DB_PW=... SVC_CONTENT_DB_PW=... \
+#   SVC_CALENDAR_DB_PW=... SVC_NOTIFICATION_DB_PW=... GRAFANA_ADMIN_PW=... \
+#   MYSQL_ROOT_PW=... MYSQL_PROVISIONER_PW=... KAFKA_BROKER_PW=... KAFKA_APP_PW=... \
+#   ./seal-secret-values.sh
+#   (일부만 환경변수로 주고 나머진 프롬프트로 받는 것도 가능 — 값이 없는 것만 물어봄)
+#
+# NAMESPACE=other-ns ./seal-secret-values.sh  로 대상 네임스페이스도 바꿀 수 있다(기본 groovy-kubernates).
+
+set -euo pipefail
+
+NAMESPACE="${NAMESPACE:-groovy-kubernates}"
+BOOTSTRAP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INFRA_ROOT="$(cd "${BOOTSTRAP_DIR}/.." && cd .. && pwd)"
+
+command -v kubeseal >/dev/null || { echo "kubeseal CLI가 필요합니다. https://github.com/bitnami-labs/sealed-secrets#installation 참고"; exit 1; }
+
+# 값 하나를 암호화해서 암호문(값만, key: 접두어 없이)을 출력한다.
+# kubeseal --format yaml 출력은 spec.encryptedData 아래 4-space 들여쓰기로 "KEY: 암호문"이 나온다.
+seal_literal() {
+  local secret_name="$1" key="$2" value="$3"
+  kubectl create secret generic "${secret_name}" -n "${NAMESPACE}" \
+    --dry-run=client --from-literal="${key}=${value}" -o yaml \
+    | kubeseal --format yaml -n "${NAMESPACE}" \
+    | grep -F "    ${key}:" | head -1 | sed -E "s/^    [^:]+: *//"
+}
+
+# 환경변수(envname)가 이미 설정돼 있으면 그 값을 그대로 쓰고, 없을 때만 프롬프트로 물어본다.
+read_secret() {
+  local prompt="$1" varname="$2" envname="$3"
+  if [[ -n "${!envname:-}" ]]; then
+    printf -v "${varname}" '%s' "${!envname}"
+    echo "${prompt}: (환경변수 \$${envname}에서 읽음)"
+  else
+    read -r -s -p "${prompt}: " "${varname}"
+    echo
+  fi
+}
+
+echo "=== 대상 네임스페이스: ${NAMESPACE} (다르면 NAMESPACE=xxx로 다시 실행) ==="
+echo
+
+# ── 1) 서비스 DB 비밀번호 5개 — 이 값을 배열에 저장해서 dbInit 섹션에서 재사용한다. ──
+declare -A svc_pw
+declare -A db_names=( [identity]=identity_db [study]=study_db [content]=content_db [calendar]=calendar_db [notification]=notification_db )
+declare -A env_names=( [identity]=SVC_IDENTITY_DB_PW [study]=SVC_STUDY_DB_PW [content]=SVC_CONTENT_DB_PW [calendar]=SVC_CALENDAR_DB_PW [notification]=SVC_NOTIFICATION_DB_PW )
+
+for svc in identity study content calendar notification; do
+  read_secret "${svc}-service DB 비밀번호" pw "${env_names[${svc}]}"
+  svc_pw[${svc}]="${pw}"
+  echo "--- helm/${svc}-service/values.yaml ---"
+  echo "sealedSecretData:"
+  echo "  ${svc}Service:"
+  echo "    dbPassword: $(seal_literal "${svc}-service-secret" SPRING_DEV_DB_PASSWORD "${pw}")"
+  echo
+done
+
+read_secret "Grafana admin 비밀번호" grafana_pw GRAFANA_ADMIN_PW
+echo "--- helm/observability/values.yaml ---"
+echo "sealedSecretData:"
+echo "  grafanaAdminPassword: $(seal_literal grafana-secret GF_SECURITY_ADMIN_PASSWORD "${grafana_pw}")"
+echo
+
+# ── 2) platform/mysql-secret.yaml ──
+read_secret "MySQL root 비밀번호" mysql_root_pw MYSQL_ROOT_PW
+read_secret "MySQL provisioner 비밀번호" mysql_prov_pw MYSQL_PROVISIONER_PW
+provisioner_sql=$(cat <<SQL
+CREATE USER IF NOT EXISTS 'provisioner'@'%'
+  IDENTIFIED BY '${mysql_prov_pw}';
+
+GRANT ALL PRIVILEGES ON *.* TO 'provisioner'@'%' WITH GRANT OPTION;
+
+FLUSH PRIVILEGES;
+SQL
+)
+echo "--- helm/platform/values.yaml (mysql) ---"
+echo "sealedSecretData:"
+echo "  mysql:"
+echo "    rootPassword: $(seal_literal mysql-secret MYSQL_ROOT_PASSWORD "${mysql_root_pw}")"
+echo "    provisionerPassword: $(seal_literal mysql-secret MYSQL_PROVISIONER_PASSWORD "${mysql_prov_pw}")"
+echo "    provisionerInitSql: $(seal_literal mysql-secret 00-provisioner-init.sql "${provisioner_sql}")"
+echo
+
+# ── 3) platform/db-init-secret.yaml — 위 1)에서 이미 입력받은 서비스별 비밀번호를 그대로
+#       재사용한다(다시 묻지 않음 — 두 SealedSecret이 같은 원본 값을 각자 암호화하는 것뿐). ──
+echo "--- helm/platform/values.yaml (dbInit) ---"
+echo "sealedSecretData:"
+echo "  dbInit:"
+for svc in identity study content calendar notification; do
+  db="${db_names[${svc}]}"
+  sql=$(cat <<SQL
+CREATE DATABASE IF NOT EXISTS ${db}
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE USER IF NOT EXISTS '${svc}_service'@'%'
+  IDENTIFIED BY '${svc_pw[${svc}]}';
+
+GRANT ALL PRIVILEGES ON ${db}.* TO '${svc}_service'@'%';
+
+FLUSH PRIVILEGES;
+SQL
+)
+  echo "    ${svc}Service: $(seal_literal db-init-sql "${svc}-service.sql" "${sql}")"
+done
+echo
+
+# ── 4) platform/kafka-secret.yaml — 사용자명은 비밀이 아니라 values.yaml에서 그대로 읽는다. ──
+broker_user=$(grep -A2 "^kafka:" "${INFRA_ROOT}/helm/platform/values.yaml" | grep "brokerUsername:" | sed -E 's/.*brokerUsername:\s*"?([^"]*)"?/\1/')
+app_user=$(grep "applicationUsername:" "${INFRA_ROOT}/helm/platform/values.yaml" | sed -E 's/.*applicationUsername:\s*"?([^"]*)"?/\1/')
+sasl_mech=$(grep "saslEnabledMechanisms:" "${INFRA_ROOT}/helm/platform/values.yaml" | sed -E 's/.*saslEnabledMechanisms:\s*"?([^"]*)"?/\1/')
+echo "(values.yaml에서 읽음: brokerUsername=${broker_user}, applicationUsername=${app_user}, saslEnabledMechanisms=${sasl_mech})"
+read_secret "Kafka broker 비밀번호" kafka_broker_pw KAFKA_BROKER_PW
+read_secret "Kafka application 비밀번호" kafka_app_pw KAFKA_APP_PW
+
+broker_jaas="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${broker_user}\" password=\"${kafka_broker_pw}\" user_${broker_user}=\"${kafka_broker_pw}\" user_${app_user}=\"${kafka_app_pw}\";"
+app_jaas="org.apache.kafka.common.security.plain.PlainLoginModule required username=\"${app_user}\" password=\"${kafka_app_pw}\";"
+adminclient_conf=$(cat <<CONF
+security.protocol=SASL_PLAINTEXT
+sasl.mechanism=${sasl_mech}
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="${broker_user}" password="${kafka_broker_pw}";
+CONF
+)
+
+echo "--- helm/platform/values.yaml (kafka) ---"
+echo "sealedSecretData:"
+echo "  kafka:"
+echo "    brokerJaasConfig: $(seal_literal kafka-secret broker-jaas-config "${broker_jaas}")"
+echo "    appJaasConfig: $(seal_literal kafka-secret app-jaas-config "${app_jaas}")"
+echo "    adminclientConf: $(seal_literal kafka-secret adminclient.conf "${adminclient_conf}")"
+echo
+
+echo "=== 완료. 위 sealedSecretData 블록들을 각 차트의 values.yaml에 병합해 넣으세요. ==="
