@@ -1,0 +1,3 @@
+frontend:
+  image:
+    tag: "msa-v2"

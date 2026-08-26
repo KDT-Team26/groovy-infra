@@ -1,0 +1,17 @@
+frontend:
+  replicaCount: 1
+  image:
+    repository: ttt103/groovy-frontend
+    tag: "msa-v2-arm64"
+    pullPolicy: Always
+  port: 5173
+  # 브라우저가 직접 호출하는 외부 접근 가능 주소라 내부 k8s Service DNS로 유도할 수 없다.
+  # Ingress 구축 전까지는 로컬 플레이스홀더로 둔다.
+  apiBaseUrl: "http://localhost:8080"
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "100m"
+      memory: "128Mi"

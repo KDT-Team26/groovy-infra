@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: study-service
+  labels:
+    app: study-service
+spec:
+  replicas: {{ .Values.studyService.replicaCount }}
+  selector:
+    matchLabels:
+      app: study-service
+  template:
+    metadata:
+      labels:
+        app: study-service
+    spec:
+      containers:
+        - name: study-service
+          image: "{{ .Values.studyService.image.repository }}:{{ .Values.studyService.image.tag }}"
+          envFrom:
+            - configMapRef:
+                name: study-service-config
+            - secretRef:
+                name: study-service-secret
+          env:
+            - name: KAFKA_SASL_JAAS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret
+                  key: app-jaas-config
+          ports:
+            - containerPort: {{ .Values.studyService.port }}
+              protocol: TCP
+          {{- if .Values.studyService.resources }}
+          resources:
+            {{- toYaml .Values.studyService.resources | nindent 12 }}
+          {{- end }}

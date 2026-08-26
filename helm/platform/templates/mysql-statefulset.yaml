@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  serviceName: mysql
+  replicas: {{ .Values.mysql.replicaCount }}
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: groovy-mysql
+          image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: mysql-config
+            - secretRef:
+                name: mysql-secret
+          ports:
+            - containerPort: {{ .Values.mysql.port }}
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'mysqladmin ping -h localhost -uroot -p"$MYSQL_ROOT_PASSWORD"'
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: groovy-mysql-data
+              mountPath: /var/lib/mysql
+            # mysql 공식 이미지는 데이터 디렉토리가 비어있는 최초 기동 시에만
+            # /docker-entrypoint-initdb.d/*.sql을 root 권한으로 자동 실행한다. 이 파일로
+            # 최소권한 provisioner 계정을 미리 만들어 두면, 서비스별 DB init Job(PreSync 훅)이
+            # root 비밀번호를 몰라도 되게 할 수 있다(GitOps 빌드 지시서 Phase 02).
+            - name: mysql-provisioner-init
+              mountPath: /docker-entrypoint-initdb.d/00-provisioner-init.sql
+              subPath: 00-provisioner-init.sql
+              readOnly: true
+      volumes:
+        - name: groovy-mysql-data
+          persistentVolumeClaim:
+            claimName: groovy-mysql-data
+        - name: mysql-provisioner-init
+          secret:
+            secretName: mysql-secret
+            items:
+              - key: 00-provisioner-init.sql
+                path: 00-provisioner-init.sql

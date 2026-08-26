@@ -1,0 +1,33 @@
+# sync wave 5 — 마지막. prometheus가 각 서비스의 /actuator/prometheus를 스크레이프하므로 그
+# 서비스들이 먼저 떠 있는 편이 낫고, mysqld-exporter도 platform(mysql)에 의존한다.
+# Alertmanager는 지시서 방침대로 이 차트에 포함하지 않고 별도 보류 상태로 둔다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/KDT-Team26/groovy-infra.git
+    targetRevision: main
+    path: helm/observability
+    helm:
+      valueFiles:
+        - values.yaml
+        # values-secret.yaml(secret.grafanaAdminPassword)은 별도 주입 필요.
+  # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
+  # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야
+  # 서비스 간 short-name DNS(mysql, identity-service 등)가 같은 네임스페이스 안에서 계속
+  # 해석된다 — 하나라도 다른 네임스페이스로 빠지면 그 서비스만 접속이 끊긴다.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: groovy-kubernates
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

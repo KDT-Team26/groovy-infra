@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: content-service
+  labels:
+    app: content-service
+spec:
+  replicas: {{ .Values.contentService.replicaCount }}
+  selector:
+    matchLabels:
+      app: content-service
+  template:
+    metadata:
+      labels:
+        app: content-service
+    spec:
+      containers:
+        - name: content-service
+          image: "{{ .Values.contentService.image.repository }}:{{ .Values.contentService.image.tag }}"
+          envFrom:
+            - configMapRef:
+                name: content-service-config
+            - secretRef:
+                name: content-service-secret
+          env:
+            - name: KAFKA_SASL_JAAS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret
+                  key: app-jaas-config
+          ports:
+            - containerPort: {{ .Values.contentService.port }}
+              protocol: TCP
+          {{- if .Values.contentService.resources }}
+          resources:
+            {{- toYaml .Values.contentService.resources | nindent 12 }}
+          {{- end }}
