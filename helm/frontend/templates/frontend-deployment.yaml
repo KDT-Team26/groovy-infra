@@ -24,4 +24,8 @@ spec:
           ports:
             - containerPort: {{ .Values.frontend.port }}
               protocol: TCP
+          {{- if .Values.frontend.resources }}
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          {{- end }}
       restartPolicy: Always
