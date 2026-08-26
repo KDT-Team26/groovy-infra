@@ -6,6 +6,7 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+values-secret.yaml
 
 # Helm 실제 시크릿 값 (예시 파일만 추적)
 helm/groovy/values-secret.yaml

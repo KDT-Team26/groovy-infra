@@ -1,0 +1,147 @@
+{
+  "title": "Pod / API 현황",
+  "uid": "pod-api-overview",
+  "schemaVersion": 39,
+  "editable": true,
+  "timezone": "browser",
+  "time": { "from": "now-1h", "to": "now" },
+  "refresh": "30s",
+  "tags": ["groovy", "pod", "cpu", "memory", "api"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Pod 리소스",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Pod별 CPU 사용량 (core)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"groovy-kubernates\"}[5m]))",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Pod별 메모리 사용량 (RSS)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"groovy-kubernates\"})",
+          "legendFormat": "{{pod}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Pod 상태 요약 (재시작 횟수 포함)",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "custom": { "align": "auto" } } },
+      "transformations": [
+        { "id": "merge", "options": {} }
+      ],
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "instant": true,
+          "format": "table",
+          "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"groovy-kubernates\"}[5m]))",
+          "legendFormat": "cpu_cores"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "instant": true,
+          "format": "table",
+          "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"groovy-kubernates\"})",
+          "legendFormat": "mem_bytes"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "row",
+      "title": "API 트래픽",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "서비스별 초당 요청 수 (RPS)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (job) (rate(http_server_requests_seconds_count{uri!=\"/actuator/prometheus\"}[5m]))",
+          "legendFormat": "{{job}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "서비스별 5xx 에러율",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 },
+          "color": { "mode": "fixed", "fixedColor": "red" }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (job) (rate(http_server_requests_seconds_count{status=~\"5..\"}[5m]))",
+          "legendFormat": "{{job}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "엔드포인트별 평균 응답시간 (ms)",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 26 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "fillOpacity": 10 } }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sum by (job, uri) (rate(http_server_requests_seconds_sum{uri!=\"/actuator/prometheus\"}[5m])) / sum by (job, uri) (rate(http_server_requests_seconds_count{uri!=\"/actuator/prometheus\"}[5m])) * 1000",
+          "legendFormat": "{{job}} {{uri}}"
+        }
+      ]
+    }
+  ]
+}
