@@ -35,7 +35,11 @@ kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
 echo
 echo "[2/7] ArgoCD 코어 설치 (stable 채널, non-HA)"
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# --server-side 필수: applicationsets.argoproj.io CRD가 커서 기본(client-side) apply로는
+# "metadata.annotations: Too long"(last-applied-configuration이 256KB 제한 초과) 에러가 난다.
+# --force-conflicts는 이 명령을 재실행하거나 위 CRD들을 이미 client-side로 만들어본 적 있을 때
+# 소유권 충돌 없이 서버사이드 관리로 넘어오게 한다.
+kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 echo
 echo "[2/7] 전체 Pod가 Ready 될 때까지 대기 (최대 5분)"
@@ -56,7 +60,7 @@ echo
 
 echo
 echo "[5/7] sealed-secrets 컨트롤러 설치 (root-app보다 먼저 — 위 '미리 알아둘 것' 참고)"
-kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/latest/download/controller.yaml
+kubectl apply --server-side --force-conflicts -f https://github.com/bitnami-labs/sealed-secrets/releases/latest/download/controller.yaml
 kubectl wait --for=condition=Ready pods -l name=sealed-secrets-controller -n kube-system --timeout=180s
 echo "  → 이 클러스터의 공개키로 비밀번호를 암호화하려면: argocd/bootstrap/seal-secret-values.sh"
 
