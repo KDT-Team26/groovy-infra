@@ -121,9 +121,12 @@ done
 echo
 
 # ── 4) platform/kafka-secret.yaml — 사용자명은 비밀이 아니라 values.yaml에서 그대로 읽는다. ──
-broker_user=$(grep -A2 "^kafka:" "${INFRA_ROOT}/helm/platform/values.yaml" | grep "brokerUsername:" | sed -E 's/.*brokerUsername:\s*"?([^"]*)"?/\1/')
-app_user=$(grep "applicationUsername:" "${INFRA_ROOT}/helm/platform/values.yaml" | sed -E 's/.*applicationUsername:\s*"?([^"]*)"?/\1/')
-sasl_mech=$(grep "saslEnabledMechanisms:" "${INFRA_ROOT}/helm/platform/values.yaml" | sed -E 's/.*saslEnabledMechanisms:\s*"?([^"]*)"?/\1/')
+# kafka.security 블록이 kafka: 바로 아래가 아니라 한참 뒤에 있어서, 앞뒤 문맥에 기대지 않고
+# 파일 전체에서 키 이름으로 직접 찾는다(이 세 키는 파일 안에 각각 한 번씩만 등장한다).
+# 따옴표 사이 값만 뽑는다 — \s는 BSD sed(macOS)에서 리터럴로 취급돼 위험하므로 안 쓴다.
+broker_user=$(grep "brokerUsername:" "${INFRA_ROOT}/helm/platform/values.yaml" | head -1 | sed -E 's/.*"([^"]*)".*/\1/')
+app_user=$(grep "applicationUsername:" "${INFRA_ROOT}/helm/platform/values.yaml" | head -1 | sed -E 's/.*"([^"]*)".*/\1/')
+sasl_mech=$(grep "saslEnabledMechanisms:" "${INFRA_ROOT}/helm/platform/values.yaml" | head -1 | sed -E 's/.*"([^"]*)".*/\1/')
 echo "(values.yaml에서 읽음: brokerUsername=${broker_user}, applicationUsername=${app_user}, saslEnabledMechanisms=${sasl_mech})"
 read_secret "Kafka broker 비밀번호" kafka_broker_pw KAFKA_BROKER_PW
 read_secret "Kafka application 비밀번호" kafka_app_pw KAFKA_APP_PW
