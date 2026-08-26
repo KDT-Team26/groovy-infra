@@ -85,3 +85,11 @@ notificationService:
 # mysqld-exporter-deployment.yaml이 mysql 접속 포트로 참조한다(platform 차트 소유 값의 사본).
 mysql:
   port: 3306
+
+alertmanager:
+  replicaCount: 1
+  image:
+    repository: prom/alertmanager
+    tag: "v0.28.1"
+    pullPolicy: IfNotPresent
+  port: 9093

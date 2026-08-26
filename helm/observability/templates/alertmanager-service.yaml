@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+spec:
+  selector:
+    app: alertmanager
+  ports:
+    - name: http
+      port: {{ .Values.alertmanager.port }}
+      targetPort: {{ .Values.alertmanager.port }}
+      protocol: TCP
+  type: ClusterIP
