@@ -29,3 +29,9 @@ data:
         access: proxy
         url: http://loki:{{ .Values.loki.port }}
         editable: true
+        jsonData:
+          derivedFields:
+            - datasourceUid: tempo
+              matcherRegex: '"traceId":"([0-9a-f]+)"'
+              name: TraceID
+              url: "$${__value.raw}"

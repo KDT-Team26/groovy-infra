@@ -22,7 +22,6 @@ identityService:
     minIdle: "2"
 
 config:
-  corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
 
 sealedSecretData:
