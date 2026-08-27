@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-exporter
+  labels:
+    app: kafka-exporter
+spec:
+  replicas: {{ .Values.kafkaExporter.replicaCount }}
+  selector:
+    matchLabels:
+      app: kafka-exporter
+  template:
+    metadata:
+      labels:
+        app: kafka-exporter
+    spec:
+      containers:
+        - name: kafka-exporter
+          image: "{{ .Values.kafkaExporter.image.repository }}:{{ .Values.kafkaExporter.image.tag }}"
+          imagePullPolicy: {{ .Values.kafkaExporter.image.pullPolicy }}
+          args:
+            - "--kafka.server={{ .Values.kafkaExporter.kafka.host }}:{{ .Values.kafkaExporter.kafka.port }}"
+            - "--sasl.enabled"
+            - "--sasl.username={{ .Values.kafkaExporter.kafka.username }}"
+            - "--sasl.password=$(KAFKA_PASSWORD)"
+            - "--sasl.mechanism={{ .Values.kafkaExporter.kafka.saslMechanism }}"
+          env:
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-exporter-secret
+                  key: KAFKA_PASSWORD
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.kafkaExporter.port }}
+              protocol: TCP
