@@ -73,3 +73,7 @@ data:
         metrics_path: /api/v1/nodes/minikube/proxy/metrics/cadvisor
         static_configs:
           - targets: ["kubernetes.default.svc:443"]
+
+      - job_name: kube-state-metrics
+        static_configs:
+          - targets: ["kube-state-metrics.kube-system.svc.cluster.local:8080"]

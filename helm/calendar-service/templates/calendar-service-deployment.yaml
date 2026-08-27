@@ -5,7 +5,9 @@ metadata:
   labels:
     app: calendar-service
 spec:
+  {{- if not .Values.calendarService.hpa.enabled }}
   replicas: {{ .Values.calendarService.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: calendar-service

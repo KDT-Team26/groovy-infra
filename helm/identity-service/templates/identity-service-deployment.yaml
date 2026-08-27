@@ -5,7 +5,9 @@ metadata:
   labels:
     app: identity-service
 spec:
+  {{- if not .Values.identityService.hpa.enabled }}
   replicas: {{ .Values.identityService.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: identity-service
