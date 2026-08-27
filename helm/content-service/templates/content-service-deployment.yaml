@@ -5,7 +5,9 @@ metadata:
   labels:
     app: content-service
 spec:
+  {{- if not .Values.contentService.hpa.enabled }}
   replicas: {{ .Values.contentService.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: content-service

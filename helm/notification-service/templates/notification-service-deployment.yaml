@@ -5,7 +5,9 @@ metadata:
   labels:
     app: notification-service
 spec:
+  {{- if not .Values.notificationService.hpa.enabled }}
   replicas: {{ .Values.notificationService.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: notification-service

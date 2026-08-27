@@ -5,7 +5,9 @@ metadata:
   labels:
     app: study-service
 spec:
+  {{- if not .Values.studyService.hpa.enabled }}
   replicas: {{ .Values.studyService.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: study-service

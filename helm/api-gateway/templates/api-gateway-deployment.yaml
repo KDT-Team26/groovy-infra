@@ -5,7 +5,9 @@ metadata:
   labels:
     app: api-gateway
 spec:
+  {{- if not .Values.apiGateway.hpa.enabled }}
   replicas: {{ .Values.apiGateway.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: api-gateway
