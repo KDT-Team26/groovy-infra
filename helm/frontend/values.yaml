@@ -2,7 +2,7 @@ frontend:
   replicaCount: 1
   image:
     repository: ttt103/groovy-frontend
-    tag: "msa-v2-arm64"
+    tag: "983e3eff0a55a17661a3730cec04370c20a3a706"
     pullPolicy: Always
   port: 5173
   # 브라우저가 직접 호출하는 외부 접근 가능 주소라 내부 k8s Service DNS로 유도할 수 없다.

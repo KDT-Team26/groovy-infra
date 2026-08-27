@@ -2,7 +2,7 @@ notificationService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-notification-service
-    tag: "msa-v1"
+    tag: "d6feff3e5a43fb7f96a756506013b3a5b034e595"
   port: 8085
   resources:
     requests:
