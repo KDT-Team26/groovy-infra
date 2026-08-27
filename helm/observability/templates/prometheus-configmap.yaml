@@ -52,6 +52,10 @@ data:
         static_configs:
           - targets: ["tempo:{{ .Values.tempo.httpPort }}"]
 
+      - job_name: kafka
+        static_configs:
+          - targets: ["kafka-exporter:{{ .Values.kafkaExporter.port }}"]
+
       - job_name: mysql
         static_configs:
           - targets: ["mysqld-exporter:{{ .Values.mysqldExporter.port }}"]
