@@ -2,7 +2,7 @@ calendarService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-calendar-service
-    tag: "7565a9aa75094cec485bdccec7282a64cabf591b"
+    tag: "275c6f55ee2f1a427535940fdf2f117d751479f5"
   port: 8084
   resources:
     requests:
