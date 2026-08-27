@@ -17,6 +17,7 @@ spec:
       containers:
         - name: study-service
           image: "{{ .Values.studyService.image.repository }}:{{ .Values.studyService.image.tag }}"
+          imagePullPolicy: {{ .Values.studyService.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: study-service-config

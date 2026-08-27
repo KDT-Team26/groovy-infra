@@ -17,6 +17,7 @@ spec:
       containers:
         - name: content-service
           image: "{{ .Values.contentService.image.repository }}:{{ .Values.contentService.image.tag }}"
+          imagePullPolicy: {{ .Values.contentService.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: content-service-config

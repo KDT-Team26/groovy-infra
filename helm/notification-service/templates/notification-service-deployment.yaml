@@ -17,6 +17,7 @@ spec:
       containers:
         - name: notification-service
           image: "{{ .Values.notificationService.image.repository }}:{{ .Values.notificationService.image.tag }}"
+          imagePullPolicy: {{ .Values.notificationService.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: notification-service-config
