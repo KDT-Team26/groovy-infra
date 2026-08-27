@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: groovy-prometheus-alert-rules
+data:
+  alert.rules.yml: |
+{{ .Files.Get "alerts/alert.rules.yml" | indent 4 }}

@@ -1,6 +1,6 @@
 # sync wave 5 — 마지막. prometheus가 각 서비스의 /actuator/prometheus를 스크레이프하므로 그
 # 서비스들이 먼저 떠 있는 편이 낫고, mysqld-exporter도 platform(mysql)에 의존한다.
-# Alertmanager는 지시서 방침대로 이 차트에 포함하지 않고 별도 보류 상태로 둔다.
+# Alertmanager는 Prometheus 알림 규칙·Slack 연동 작업이 끝나 이 차트에 포함됨(#30).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -17,8 +17,8 @@ spec:
     helm:
       valueFiles:
         - values.yaml
-        # 시크릿(secret.grafanaAdminPassword)은 Sealed Secrets로 전환됨(2026-08-26) — 이
-        # values.yaml의 sealedSecretData.grafanaAdminPassword에 암호화된 값을 직접 넣는다
+        # 시크릿(grafanaAdminPassword, slackWebhookUrl)은 Sealed Secrets로 관리된다 — 이
+        # values.yaml의 sealedSecretData.* 에 암호화된 값을 직접 넣는다
         # (argocd/bootstrap/seal-secret-values.sh).
   # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
   # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야
