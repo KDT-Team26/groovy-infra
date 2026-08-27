@@ -4,6 +4,13 @@ identityService:
     repository: ttt103/groovy-identity-service
     tag: "msa-v1"
   port: 8081
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
   database:
     host: mysql
     port: 3306
@@ -17,3 +24,7 @@ identityService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
+
+sealedSecretData:
+  identityService:
+    dbPassword: AgBBVTjCOr81v/5hfe39WZnr7qRFYrQTbUEPNZQp6fGP2fOTOm0j+F8T0/tV5bB/AhezPq37ehY/xRMZJXEYAES5ua5wzY/iy1LslfkdP1zv2P/cSEH1fdUlVwgHVdcLr/84eNreymW2X+FKY03GQsi2zKupTpGGY/L5Z0ojOB8BlQ1uY6FicvpBL9rfFCJQWq8k2TqnZrtIieHB1GIh0y+1TGZDQzLsUfyhlMilQPLNc9fD5vIxjB7UcD8QFqFEpE+gitHbomZibXzUZdK0plnPnfw7eeAiaK/ZYjcZ2HnNoVCMNxWGv8vX3K3NUn+jjcHCOJ+Lm4XiL0eaVpZlrHZoqU9H0Yg+VLAuaZzBCzdQBN8dDYBedZ4uh7itYhh81hh9ZvMaRXfed3Pj4dXsRT5Q8UCbKfoNNvoBFzLsi3UtZYZuJUVFWbPTFNhqDMVHgsG/aizrrJUYopLEhWfM33KPKqY33cl3TDzwQx+JtI5OE+89zqzYf3mU93c0uhcbaQztkPhmbkaeGtfde9wtDBLgkpKWjzFFrb3EebXZqQ4cFgumWLVfJxIcGfdO00QKCBfwM7BP2OYvCrE5PUkLo1ndz3cyNTRLxMy0wjPNoaNuEalO5c2EUUdFbDzyqxckbCALcvxwzdBiBNIK2NI6xA8ydLHsLQmBaaj++TkYbJDJShmINOJf2nqy4GzHkJvhtlgXWqSU2mtmHZrv

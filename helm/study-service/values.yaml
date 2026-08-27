@@ -4,6 +4,13 @@ studyService:
     repository: ttt103/groovy-study-service
     tag: "msa-v1"
   port: 8082
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
   database:
     host: mysql
     port: 3306
@@ -30,3 +37,7 @@ studyService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
+
+sealedSecretData:
+  studyService:
+    dbPassword: AgBBTHoYt//7M5pRNtX32Ri+pEc+FzZXDLPqd8+GRVLBo6qGZIbnQqHmFSF0JRHk8gS8aGeyvHr9DQjd5Lq2biesGICfsmB9/6EbwlCZKacHnqL0WZYhtpOEqFZ4M1tKCuSkosOV1Ja2nDFbyGmD8qZT4cefg7KTB+Q2TpjTvSqROHvFvQDE/hN9NH63HQyTbG6SnaD8ZVoe3nPpZRQyXZ36tk6xL9Nz9KqVykvVYioSLK6rJJcGWc0qmen4H09RhVIbpsakNDwylgeK4JWw93Fxj65eJ1zP0cZ7IDJRgv3UGJFsG33+pAUvtJ5i+WeUrVeUVm4i1mlRbZBsDTcgdvLu+QW2aB06E683bsXo/GS+nT7IhRSYTl/h5zFI75lajf1Tppm6ErZMk6239dX9CV4QNC13p4TvLN+3MPnylMk9BTDwd4tqLtAxH1fSmF3NzqBVKLRVmzGay7kGhgDc3lisuB3S0OJMqcfQFiWHiPxzqZ3UFx+K/SKOVW5rMpjR+qhq0ClQmHTM9CY2YpUmEgzx+VRAva6CXud3Eu5dCCS2YKbkCO3aorAI6gEWq5aADu/5HU8ieJgDexNng+smUzldVXgt4hp+v6UdvDcxzTQcSYtcYBqGsPGT3KKjBWX2/kYoV7LXIluZK45sb+JXKXyJE1OvY4Hr1Q1Zp91tdRuPlVfpJ/nyajePGI+LedkYZ4uoFcB7jLI/hsgw

@@ -4,6 +4,13 @@ contentService:
     repository: ttt103/groovy-content-service
     tag: "msa-v1"
   port: 8083
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
   database:
     host: mysql
     port: 3306
@@ -34,3 +41,7 @@ contentService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
+
+sealedSecretData:
+  contentService:
+    dbPassword: AgCVe3jGWCpzORF4MXN7knj/2OjhgJBhv2KY1Y++SpzMQU+pCvwUkzADLuFYKIfOK4WKIxLeOhzQzQ4xKF0DWiJ/UcHXZsbBJMiGLiEbdGekdpaSjZ/ahErrwS/3SAkFdV/IPyhbGUBy6VTs8m3IN0OLn4uVRgORgrDR88Ig+qoSKmeIV6DuehOCggrEkzWF03LiWpF6wOJD/lnR66MkmqiP8lHUsUfzoKeFkbIZnGP1B2p1i8sd5QKuldQdp3Em1q6F1yOqJU5x94CIKtWVEtADzSB5crRA6zTVcl0o3kA6LVEjrhpIOaQRUpLT5ok7s3NI/qI9/4tLj/ndhsYukUIyPAAOpzAyQSaRmBZIGFmheadvFM4JwWR3gDJjL6c8SOXuWMPAfulk2uDsRp4yoDHeny5luk6UuFv4obhUcHLH90IBHaChAvEQp9lOFLSisHcgEnQ8Z/UJZ7ktA8xOKJo6dwgvf/4vpzrKqpo5mxNFzmNyig3qUkTOxSA4tCGnuwCyJE/uYVLBSfZ4MA4uTcjmqqS8CcDJ5PeVFNDYJmIGL6MIcelQjwTNaqSF3lWIa36BCJibrXOLrvpWSG+cD+4ig+PUU9Gd7o/dYwVPNs90nHrxSANlqlBPJW0Q8K44B88nyQnigOFU44htnRYv+ZCmX7sBFnoLsH0TkFTv1jg93+RvC516e48oR+74B7dzUkUJTLsc2HNJ10wG

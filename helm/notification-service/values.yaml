@@ -4,6 +4,13 @@ notificationService:
     repository: ttt103/groovy-notification-service
     tag: "msa-v1"
   port: 8085
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
   database:
     host: mysql
     port: 3306
@@ -31,3 +38,7 @@ notificationService:
 # 않고 게이트웨이를 경유하는 REST + SSE 뿐이라 CORS_ALLOWED_ORIGINS 환경변수 자체가 없다).
 config:
   timezone: "Asia/Seoul"
+
+sealedSecretData:
+  notificationService:
+    dbPassword: AgB7GHdxsUE2+uCqsWXdMrfZejW/jZ7IMX/aLBzPrTHY2fXzJsQOUQMAUWJ2s3g5wbn2YenjxUN7eqrvI5Ef/8YtrfxJQcs7bIqR2tdPW5xan4u00yn/ctOl4N5etmbF2OLIX/IMhWoL88+BDrCyX6E95UxMEQHeret/QuXoQo697exxBxkIx4uGxjzCgnjLZOAB3UV6Xcf3VYdu0QTdGMmKVFX+aeVJ53eRRpUpVDgRCr8QwTsxdTJJeZILj1E9eO2eb/wOgbjCaC+xHsMUM62KYwyvz/V7/rnKiKQ2VyiYnTbm+3/T5SmyMCuo/nrdz5sKzzFrwif1PEaYDDo839CVCJ5HAMwf2YiVUA86sn6rD8sayzkEtPLjWNvtWLb9Rtdr/4VQhdSAPJyGRYXSH1Ur5sXKyXdx8PhQH4tP6fkDmcqa3iJtNlnRL7hfmar6AosshYhgPBmfAAxlKQRgDhPuHq6qqF6RzmVycUG8xOaCejJRTGJfz5Ypd5SLvYSYWHRvK83lMUzFb5wwxEs1EfZR+yhyb85gjuKFBFUYsZfb+4vSoP6IZTlNCXVIvqUQBotrGxg7/aOf8PjrimDn8Mjxd7UE9/JBodccRBBUOCahE7vNR9dL7pw5HDB6ZViHWzgvqUuL56IJYFrGBKHikpmBg8P1dGxjqB726dz4WOFV1uv6+4QhzS9w2ccOJv4aPRF+e92Ix3F6aoNz

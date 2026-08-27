@@ -37,4 +37,4 @@ spec:
             name: groovy-alertmanager-config
         - name: slack-webhook
           secret:
-            secretName: groovy-alertmanager-secret
+            secretName: alertmanager-secret
