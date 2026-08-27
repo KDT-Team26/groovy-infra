@@ -25,6 +25,7 @@ prometheus:
   replicaCount: 1
   image:
     repository: prom/prometheus
+    pullPolicy: IfNotPresent
     tag: "v2.53.0"
   port: 9090
 
@@ -32,6 +33,7 @@ grafana:
   replicaCount: 1
   image:
     repository: grafana/grafana
+    pullPolicy: IfNotPresent
     tag: "11.1.0"
   port: 3000
 
@@ -39,6 +41,7 @@ tempo:
   replicaCount: 1
   image:
     repository: grafana/tempo
+    pullPolicy: IfNotPresent
     tag: "latest"
   httpPort: 3200
   otlpHttpPort: 4318

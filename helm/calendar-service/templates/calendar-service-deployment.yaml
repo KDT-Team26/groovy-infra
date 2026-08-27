@@ -17,6 +17,7 @@ spec:
       containers:
         - name: calendar-service
           image: "{{ .Values.calendarService.image.repository }}:{{ .Values.calendarService.image.tag }}"
+          imagePullPolicy: {{ .Values.calendarService.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: calendar-service-config

@@ -17,6 +17,7 @@ spec:
       containers:
         - name: api-gateway
           image: "{{ .Values.apiGateway.image.repository }}:{{ .Values.apiGateway.image.tag }}"
+          imagePullPolicy: {{ .Values.apiGateway.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: api-gateway-config

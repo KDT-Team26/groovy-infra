@@ -17,6 +17,7 @@ spec:
       containers:
         - name: grafana
           image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+          imagePullPolicy: {{ .Values.grafana.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.grafana.port }}
               protocol: TCP
