@@ -30,7 +30,12 @@ spec:
               subPath: prometheus.yml
             - name: prometheus-alert-rules
               mountPath: /etc/prometheus/alert.rules.yml
-              subPath: alert.rules.yml        
+              subPath: alert.rules.yml
+
+            {{- if .Values.prometheus.persistence.enabled }}
+            - name: prometheus-data
+              mountPath: {{ .Values.prometheus.persistence.mountPath }}
+            {{- end }}
 
       volumes:
         - name: prometheus-config
@@ -40,3 +45,9 @@ spec:
         - name: prometheus-alert-rules
           configMap:
             name: groovy-prometheus-alert-rules
+
+        {{- if .Values.prometheus.persistence.enabled }}
+        - name: prometheus-data
+          persistentVolumeClaim:
+            claimName: groovy-prometheus-data
+        {{- end }}

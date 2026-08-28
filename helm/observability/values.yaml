@@ -41,6 +41,10 @@ prometheus:
     pullPolicy: IfNotPresent
     tag: "v2.53.0"
   port: 9090
+  persistence:
+    enabled: true
+    size: 10Gi
+    mountPath: /prometheus
 
 grafana:
   replicaCount: 1
