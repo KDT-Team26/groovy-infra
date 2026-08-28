@@ -7,8 +7,8 @@
 # 이 스크립트는 클러스터에 아무것도 적용(apply)하지 않는다 — 순수하게 "평문 -> 암호문" 변환만
 # 하고 결과를 화면에 출력한다. 그 출력을 사람이 직접 확인하고 values.yaml에 붙여넣는 방식이다.
 #
-# 실제로 필요한 값은 11개다(서비스 DB 비밀번호 5 + grafana 1 + alertmanager slack webhook 1 +
-# mysql 2 + kafka 2).
+# 실제로 필요한 값은 12개다(서비스 DB 비밀번호 5 + grafana 1 + alertmanager discord webhook
+# 설정 전체(#65) 1 + mysql 2 + kafka 2 + argocd-notifications discord webhook(#61) 1).
 # db-init용 SQL에도 같은 서비스 비밀번호가 또 들어가지만, 이 스크립트는 한 번 입력받은 값을
 # 재사용만 하지 다시 묻지 않는다(재입력을 시키면 오히려 오타로 두 곳 값이 달라질 위험만 커짐).
 #
@@ -18,7 +18,7 @@
 # 사용법 — 비대화형(전부 환경변수로 한 번에, 반복 설치·CI 등에 유용):
 #   SVC_IDENTITY_DB_PW=... SVC_STUDY_DB_PW=... SVC_CONTENT_DB_PW=... \
 #   SVC_CALENDAR_DB_PW=... SVC_NOTIFICATION_DB_PW=... GRAFANA_ADMIN_PW=... \
-#   ALERTMANAGER_SLACK_WEBHOOK_URL=... \
+#   ALERTMANAGER_DISCORD_WEBHOOK_URL=... ARGOCD_DISCORD_WEBHOOK_URL=... \
 #   MYSQL_ROOT_PW=... MYSQL_PROVISIONER_PW=... KAFKA_BROKER_PW=... KAFKA_APP_PW=... \
 #   ./seal-secret-values.sh
 #   (일부만 환경변수로 주고 나머진 프롬프트로 받는 것도 가능 — 값이 없는 것만 물어봄)
@@ -35,11 +35,13 @@ command -v kubeseal >/dev/null || { echo "kubeseal CLI가 필요합니다. https
 
 # 값 하나를 암호화해서 암호문(값만, key: 접두어 없이)을 출력한다.
 # kubeseal --format yaml 출력은 spec.encryptedData 아래 4-space 들여쓰기로 "KEY: 암호문"이 나온다.
+# 4번째 인자(ns)는 선택 — 대부분 시크릿은 기본 NAMESPACE(groovy-kubernates)를 쓰지만,
+# argocd-notifications-secret처럼 argocd 네임스페이스에 떠야 하는 예외가 있어서 넣었다.
 seal_literal() {
-  local secret_name="$1" key="$2" value="$3"
-  kubectl create secret generic "${secret_name}" -n "${NAMESPACE}" \
+  local secret_name="$1" key="$2" value="$3" ns="${4:-$NAMESPACE}"
+  kubectl create secret generic "${secret_name}" -n "${ns}" \
     --dry-run=client --from-literal="${key}=${value}" -o yaml \
-    | kubeseal --format yaml -n "${NAMESPACE}" \
+    | kubeseal --format yaml -n "${ns}" \
     | grep -F "    ${key}:" | head -1 | sed -E "s/^    [^:]+: *//"
 }
 
@@ -74,11 +76,40 @@ for svc in identity study content calendar notification; do
 done
 
 read_secret "Grafana admin 비밀번호" grafana_pw GRAFANA_ADMIN_PW
-read_secret "Alertmanager Slack Webhook URL" alertmanager_webhook ALERTMANAGER_SLACK_WEBHOOK_URL
-echo "--- helm/observability/values.yaml ---"
+echo "--- helm/observability/values.yaml (grafana) ---"
 echo "sealedSecretData:"
 echo "  grafanaAdminPassword: $(seal_literal grafana-secret GF_SECURITY_ADMIN_PASSWORD "${grafana_pw}")"
-echo "  slackWebhookUrl: $(seal_literal alertmanager-secret slack_webhook_url "${alertmanager_webhook}")"
+echo
+
+# ── 1-1) helm/observability/templates/alertmanager-secret.yaml (#65, Slack -> Discord 전환) ──
+# discord_configs가 slack_configs의 api_url_file(파일 경로 참조)을 지원하지 않아(alertmanager-
+# secret.yaml 주석 참고) URL 한 줄이 아니라 alertmanager.yml 전체를 여기서 조립해서 통째로
+# 봉인한다 — mysql-secret.yaml의 provisionerInitSql과 같은 방식.
+read_secret "Alertmanager Discord Webhook URL" alertmanager_discord_webhook ALERTMANAGER_DISCORD_WEBHOOK_URL
+alertmanager_config=$(cat <<YAML
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: "discord-notifications"
+
+receivers:
+  - name: "discord-notifications"
+    discord_configs:
+      - webhook_url: "${alertmanager_discord_webhook}"
+        send_resolved: true
+YAML
+)
+echo "--- helm/observability/values.yaml (alertmanager) ---"
+echo "sealedSecretData:"
+echo "  alertmanagerConfig: $(seal_literal alertmanager-secret alertmanager.yml "${alertmanager_config}")"
+echo
+
+# ── 1-2) argocd/bootstrap/argocd-notifications-secret.yaml — argocd 네임스페이스라
+#         seal_literal에 ns를 명시로 넘긴다(#61, ArgoCD sync 알림 Discord 연동). ──
+read_secret "ArgoCD Notifications Discord Webhook URL" argocd_discord_webhook ARGOCD_DISCORD_WEBHOOK_URL
+echo "--- argocd/bootstrap/argocd-notifications-secret.yaml (encryptedData.discord-webhook-url) ---"
+echo "  discord-webhook-url: $(seal_literal argocd-notifications-secret discord-webhook-url "${argocd_discord_webhook}" argocd)"
 echo
 
 # ── 2) platform/mysql-secret.yaml ──
