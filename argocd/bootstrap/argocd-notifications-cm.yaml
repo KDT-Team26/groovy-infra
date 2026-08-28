@@ -1,24 +1,5 @@
-# ArgoCD sync/health 알림을 Discord로 보내기 위한 설정(#61).
-#
-# 주의: 이 파일은 argocd-rbac-cm.yaml과 같은 이유로 ArgoCD 자신이 GitOps(root-app.yaml)로
-# 관리하는 대상이 아니다 — install-argocd.sh가 kubectl apply로 직접 적용한다. 반영/변경 시
-# 아래 두 명령으로 다시 적용한다(ConfigMap이라 notifications-controller가 변경을 자동
-# 감시하므로 재시작은 불필요 — 반영이 안 되면 확인용으로만
-# `kubectl rollout restart deployment argocd-notifications-controller -n argocd`):
-#   kubectl apply -n argocd -f argocd/bootstrap/argocd-notifications-cm.yaml
-#
-# Discord 연동 방식: notifications-engine 네이티브 `service.discord`(Discord Bot Token 필요)가
-# 아니라 범용 `service.webhook`을 그대로 써서 Discord의 Incoming Webhook URL에 JSON을 POST하는
-# 방식을 택했다 — 네이티브 discord 서비스는 커뮤니티에서 파싱 에러 리포트가 많아(argoproj/argo-cd
-# #22286, #7378) 신뢰성이 낮다고 판단. url 값의 `$discord-webhook-url`은
-# argocd-notifications-secret.yaml의 동일 키를 notifications-engine이 자동으로 치환해주는
-# 문법이다(Slack 연동에서 `$slack-token`을 쓰는 것과 동일한 메커니즘).
-#
-# subscriptions를 앱 이름 없이 전역으로 등록해서 argocd/apps/*.yaml 9개 Application 전부가
-# 자동으로 알림 대상이 된다 — 개별 앱마다 notifications.argoproj.io 어노테이션을 다는 방식보다
-# 변경 범위가 작아서 이 방식을 택했다. 특정 앱만 알림에서 빼고 싶어지면 그 앱의 Application
-# manifest에 `notifications.argoproj.io/subscribe.on-sync-succeeded.discord: ""` 같은 빈 값
-# annotation을 달아 전역 구독을 무효화할 수 있다(notifications-engine 문서 참고).
+# ArgoCD sync/health 알림을 Discord로 보내기 위한 파일
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -33,9 +14,6 @@ data:
     - name: Content-Type
       value: application/json
 
-  # operationState.message는 sync 에러 메시지 등 임의 문자열이 그대로 들어오므로, 큰따옴표나
-  # 개행이 섞이면 JSON이 깨진다 — toJson으로 감싸 안전하게 이스케이프한다(양쪽 따옴표까지
-  # toJson이 포함해서 만들어주므로 템플릿에 별도 큰따옴표를 직접 붙이지 않는다).
   template.app-sync-succeeded: |
     webhook:
       discord:
