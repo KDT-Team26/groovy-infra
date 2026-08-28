@@ -1,0 +1,31 @@
+# metrics-server — HPA가 CPU/메모리 사용량 조회하는 metrics.k8s.io API 제공.
+# 지금까지 minikube addon(imperative)으로 수동 설치돼서 GitOps 관리 밖에 있었음.
+# 공식 Helm chart를 ArgoCD가 직접 받아오게 해서 다른 9개 Application과 동일하게 선언적으로 관리.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: metrics-server
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://kubernetes-sigs.github.io/metrics-server/
+    chart: metrics-server
+    # 적용 전에 `helm search repo metrics-server/metrics-server --versions`로 최신 안정 버전 확인해서 채우기
+    targetRevision: "3.12.2"
+    helm:
+      values: |
+        args:
+          # minikube kubelet 인증서가 자체 서명이라 검증 실패함 — 운영 클러스터로 옮기면 이 옵션 제거해야 함
+          - --kubelet-insecure-tls
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

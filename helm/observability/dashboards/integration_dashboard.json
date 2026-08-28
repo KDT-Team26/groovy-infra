@@ -43,7 +43,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(container_last_seen{image!=\"\"})",
+          "expr": "count(container_last_seen{namespace=\"groovy-kubernates\"})",
           "intervalFactor": 2,
           "legendFormat": "__auto",
           "metric": "container_last_seen",
@@ -130,7 +130,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{image!=\"\"}[5m]) * 100)",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"groovy-kubernates\"}[5m]) * 100)",
           "intervalFactor": 2,
           "legendFormat": "",
           "metric": "container_memory_usage_bytes",
@@ -218,7 +218,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(container_memory_usage_bytes{image!=\"\"})/1024/1024",
+          "expr": "sum(container_memory_usage_bytes{namespace=\"groovy-kubernates\"})/1024/1024",
           "intervalFactor": 2,
           "legendFormat": "",
           "metric": "container_memory_usage_bytes",
@@ -288,7 +288,7 @@
     },
     {
       "id": 15,
-      "title": "CPU [ USER + SYSTEM ]",
+      "title": "서비스별 CPU 사용률 (pod, %)",
       "type": "timeseries",
       "gridPos": {
         "x": 0,
@@ -303,10 +303,10 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=~\".*${container}\"}[5m])) by (name) * 100",
+          "expr": "sum by (service) (\n  label_replace(\n    rate(container_cpu_usage_seconds_total{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n) * 100",
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "{{name}}",
+          "legendFormat": "{{service}}",
           "metric": "cpu",
           "range": true,
           "step": 10,
@@ -404,11 +404,12 @@
         "overrides": []
       },
       "pluginVersion": "13.1.1",
-      "transparent": false
+      "transparent": false,
+      "description": "6개 Spring 서비스 pod의 cAdvisor 기준 CPU 사용률. HPA로 replica 늘어도 서비스 단위로 합산됨."
     },
     {
       "id": 16,
-      "title": "memory RSS [ CASH NOT ADDED ]",
+      "title": "서비스별 메모리 사용률 (Working Set, MB)",
       "type": "timeseries",
       "gridPos": {
         "x": 6,
@@ -423,9 +424,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(container_memory_rss{name=~\"groovy-$container\", name!=\"\"}) by (name)",
+          "expr": "sum by (service) (\n  label_replace(\n    container_memory_working_set_bytes{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"},\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n) / 1024 / 1024",
           "intervalFactor": 2,
-          "legendFormat": "{{name}}",
+          "legendFormat": "{{service}}",
           "metric": "container_memory_usage_bytes",
           "range": true,
           "step": 10,
@@ -520,39 +521,15 @@
             }
           }
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "groovy-mysql"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": true,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "pluginVersion": "13.1.1",
-      "transparent": false
+      "transparent": false,
+      "description": "container_memory_working_set_bytes 사용 - k8s가 OOM 판단 기준으로 실제로 보는 값(캐시 제외 실사용량)."
     },
     {
       "id": 20,
-      "title": "Network Tx [ 송신 ]",
+      "title": "서비스별 Network Tx (송신)",
       "type": "timeseries",
       "gridPos": {
         "x": 12,
@@ -567,9 +544,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(irate(container_network_transmit_bytes_total{name=~\"groovy-$container\", name!=\"\"}[5m])) by (name)",
+          "expr": "sum by (service) (\n  label_replace(\n    irate(container_network_transmit_bytes_total{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n)",
           "intervalFactor": 2,
-          "legendFormat": "{{name}}",
+          "legendFormat": "{{service}}",
           "range": true,
           "step": 20,
           "refId": "A",
@@ -663,39 +640,14 @@
             }
           }
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "groovy-mysql"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": true,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "pluginVersion": "13.1.1",
       "transparent": false
     },
     {
       "id": 19,
-      "title": "Network Rx [ 수신 ]",
+      "title": "서비스별 Network Rx (수신)",
       "type": "timeseries",
       "gridPos": {
         "x": 18,
@@ -710,9 +662,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(irate(container_network_receive_bytes_total{name=~\"groovy-$container\", name!=\"\"}[5m])) by (name)",
+          "expr": "sum by (service) (\n  label_replace(\n    irate(container_network_receive_bytes_total{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n)",
           "intervalFactor": 2,
-          "legendFormat": "{{name}}",
+          "legendFormat": "{{service}}",
           "metric": "container_network_receive_bytes_total",
           "range": true,
           "step": 20,
@@ -998,8 +950,8 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "hikaricp_connections_active{job=\"groovy-backend\"}",
-          "legendFormat": "ACTIVE",
+          "expr": "hikaricp_connections_active{job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"}",
+          "legendFormat": "{{job}} ACTIVE",
           "range": true,
           "refId": "A",
           "datasource": {
@@ -1010,9 +962,9 @@
         },
         {
           "editorMode": "code",
-          "expr": "hikaricp_connections_idle{job=\"groovy-backend\"}",
+          "expr": "hikaricp_connections_idle{job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"}",
           "instant": false,
-          "legendFormat": "IDLE",
+          "legendFormat": "{{job}} IDLE",
           "range": true,
           "refId": "B",
           "datasource": {
@@ -1023,9 +975,9 @@
         },
         {
           "editorMode": "code",
-          "expr": "hikaricp_connections_pending{job=\"groovy-backend\"}",
+          "expr": "hikaricp_connections_pending{job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"}",
           "instant": false,
-          "legendFormat": "PENDING",
+          "legendFormat": "{{job}} PENDING",
           "range": true,
           "refId": "C",
           "datasource": {
@@ -1036,9 +988,9 @@
         },
         {
           "editorMode": "code",
-          "expr": "hikaricp_connections_max{job=\"groovy-backend\"}",
+          "expr": "hikaricp_connections_max{job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"}",
           "instant": false,
-          "legendFormat": "Pool MAX",
+          "legendFormat": "{{job}} MAX",
           "range": true,
           "refId": "D",
           "datasource": {
@@ -1786,7 +1738,7 @@
     },
     {
       "id": 29,
-      "title": "CPU Usage",
+      "title": "서비스별 CPU 사용률 (JVM process)",
       "type": "timeseries",
       "gridPos": {
         "x": 0,
@@ -1801,26 +1753,12 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "process_cpu_usage{application=\"groovy-backend\", instance=\"backend:8080\", job=\"groovy-backend\"}",
+          "expr": "process_cpu_usage{job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"}",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "process",
+          "legendFormat": "{{job}}",
           "range": true,
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "hide": false
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg_over_time(process_cpu_usage{application=\"groovy-backend\", instance=\"backend:8080\", job=\"groovy-backend\"}\r\n[15m])",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "process-15m",
-          "range": true,
-          "refId": "C",
+          "refId": "A",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -1914,7 +1852,7 @@
     },
     {
       "id": 28,
-      "title": "JVM Heap",
+      "title": "서비스별 JVM Heap 사용량 (MB)",
       "type": "timeseries",
       "gridPos": {
         "x": 6,
@@ -1929,44 +1867,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(jvm_memory_used_bytes{application=\"groovy-backend\", instance=\"backend:8080\", job=\"groovy-backend\", area=\"heap\"})",
+          "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\", job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"}) / 1024 / 1024",
           "format": "time_series",
           "intervalFactor": 2,
-          "legendFormat": "used",
-          "metric": "",
+          "legendFormat": "{{job}}",
           "range": true,
-          "step": 2400,
+          "step": 30,
           "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "hide": false
-        },
-        {
-          "editorMode": "code",
-          "expr": "sum(jvm_memory_committed_bytes{application=\"groovy-backend\", instance=\"backend:8080\", job=\"groovy-backend\", area=\"heap\"})",
-          "format": "time_series",
-          "intervalFactor": 2,
-          "legendFormat": "committed",
-          "range": true,
-          "step": 2400,
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "hide": false
-        },
-        {
-          "editorMode": "code",
-          "expr": "sum(jvm_memory_max_bytes{application=\"groovy-backend\", instance=\"backend:8080\", job=\"groovy-backend\", area=\"heap\"})",
-          "format": "time_series",
-          "intervalFactor": 2,
-          "legendFormat": "max",
-          "range": true,
-          "step": 2400,
-          "refId": "C",
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -1998,7 +1905,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "bytes",
+          "unit": "mbytes",
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -2273,7 +2180,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 30,
+        "y": 36,
         "w": 24,
         "h": 1
       },
@@ -2286,7 +2193,7 @@
       "type": "gauge",
       "gridPos": {
         "x": 0,
-        "y": 31,
+        "y": 37,
         "w": 4,
         "h": 4
       },
@@ -2298,7 +2205,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"$node\",job=\"$job\"}[$__rate_interval])))",
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"node-exporter:9100\",job=\"node-exporter\"}[$__rate_interval])))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -2389,7 +2296,7 @@
       "type": "gauge",
       "gridPos": {
         "x": 4,
-        "y": 31,
+        "y": 37,
         "w": 4,
         "h": 4
       },
@@ -2401,7 +2308,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "clamp_min((1 - (node_memory_MemAvailable_bytes{instance=\"$node\", job=\"$job\"} / node_memory_MemTotal_bytes{instance=\"$node\", job=\"$job\"})) * 100, 0)",
+          "expr": "clamp_min((1 - (node_memory_MemAvailable_bytes{instance=\"node-exporter:9100\", job=\"node-exporter\"} / node_memory_MemTotal_bytes{instance=\"node-exporter:9100\", job=\"node-exporter\"})) * 100, 0)",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -2481,7 +2388,7 @@
       "type": "gauge",
       "gridPos": {
         "x": 8,
-        "y": 31,
+        "y": 37,
         "w": 4,
         "h": 4
       },
@@ -2493,7 +2400,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} > bool 0) * ((node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{instance=\"$node\",job=\"$job\"}) / (node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"})) * 100",
+          "expr": "(node_memory_SwapTotal_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} > bool 0) * ((node_memory_SwapTotal_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_SwapFree_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"}) / (node_memory_SwapTotal_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"})) * 100",
           "instant": true,
           "range": false,
           "step": 240,
@@ -2583,7 +2490,7 @@
       "type": "gauge",
       "gridPos": {
         "x": 12,
-        "y": 31,
+        "y": 37,
         "w": 4,
         "h": 4
       },
@@ -2595,7 +2502,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "scalar(node_load1{instance=\"$node\",job=\"$job\"}) * 100 / count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu))",
+          "expr": "scalar(node_load1{instance=\"node-exporter:9100\",job=\"node-exporter\"}) * 100 / count(count(node_cpu_seconds_total{instance=\"node-exporter:9100\",job=\"node-exporter\"}) by (cpu))",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -2686,7 +2593,7 @@
       "type": "gauge",
       "gridPos": {
         "x": 16,
-        "y": 31,
+        "y": 37,
         "w": 4,
         "h": 4
       },
@@ -2698,7 +2605,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(\n  (node_filesystem_size_bytes{instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n   - node_filesystem_avail_bytes{instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"})\n  / node_filesystem_size_bytes{instance=\"$node\", job=\"$job\", mountpoint=\"/\", fstype!=\"rootfs\"}\n) * 100\n",
+          "expr": "(\n  (node_filesystem_size_bytes{instance=\"node-exporter:9100\", job=\"node-exporter\", mountpoint=\"/\", fstype!=\"rootfs\"}\n   - node_filesystem_avail_bytes{instance=\"node-exporter:9100\", job=\"node-exporter\", mountpoint=\"/\", fstype!=\"rootfs\"})\n  / node_filesystem_size_bytes{instance=\"node-exporter:9100\", job=\"node-exporter\", mountpoint=\"/\", fstype!=\"rootfs\"}\n) * 100\n",
           "format": "time_series",
           "instant": true,
           "range": false,
@@ -2788,7 +2695,7 @@
       "type": "stat",
       "gridPos": {
         "x": 20,
-        "y": 31,
+        "y": 37,
         "w": 4,
         "h": 4
       },
@@ -2800,7 +2707,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "node_time_seconds{instance=\"$node\",job=\"$job\"} - node_boot_time_seconds{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_time_seconds{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_boot_time_seconds{instance=\"node-exporter:9100\",job=\"node-exporter\"}",
           "instant": true,
           "range": false,
           "step": 240,
@@ -2873,7 +2780,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 0,
-        "y": 35,
+        "y": 41,
         "w": 6,
         "h": 7
       },
@@ -2884,7 +2791,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(rate(node_cpu_seconds_total{mode=\"system\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+          "expr": "sum(rate(node_cpu_seconds_total{mode=\"system\",instance=\"node-exporter:9100\",job=\"node-exporter\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"node-exporter:9100\",job=\"node-exporter\"}) by (cpu)))",
           "format": "time_series",
           "interval": "",
           "legendFormat": "System - Processes executing in kernel mode",
@@ -2899,7 +2806,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(node_cpu_seconds_total{mode=\"user\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+          "expr": "sum(rate(node_cpu_seconds_total{mode=\"user\",instance=\"node-exporter:9100\",job=\"node-exporter\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"node-exporter:9100\",job=\"node-exporter\"}) by (cpu)))",
           "format": "time_series",
           "legendFormat": "User - Normal processes executing in user mode",
           "range": true,
@@ -2913,7 +2820,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "sum(rate(node_cpu_seconds_total{mode=\"iowait\",instance=\"$node\",job=\"$job\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"$node\",job=\"$job\"}) by (cpu)))",
+          "expr": "sum(rate(node_cpu_seconds_total{mode=\"iowait\",instance=\"node-exporter:9100\",job=\"node-exporter\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{instance=\"node-exporter:9100\",job=\"node-exporter\"}) by (cpu)))",
           "format": "time_series",
           "legendFormat": "Iowait - Waiting for I/O to complete",
           "range": true,
@@ -3167,7 +3074,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 6,
-        "y": 35,
+        "y": 41,
         "w": 6,
         "h": 7
       },
@@ -3178,7 +3085,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "node_memory_MemTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_MemFree_bytes{instance=\"$node\",job=\"$job\"} - node_memory_Buffers_bytes{instance=\"$node\",job=\"$job\"} - node_memory_Cached_bytes{instance=\"$node\",job=\"$job\"} - node_memory_Slab_bytes{instance=\"$node\",job=\"$job\"} - node_memory_PageTables_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapCached_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemTotal_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_MemFree_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_Buffers_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_Cached_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_Slab_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_PageTables_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_SwapCached_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"}",
           "format": "time_series",
           "legendFormat": "Apps - Memory used by user-space applications",
           "range": true,
@@ -3192,7 +3099,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_Cached_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_Cached_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"}",
           "format": "time_series",
           "legendFormat": "Cache - Parked file data (file content) cache",
           "range": true,
@@ -3206,7 +3113,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_Buffers_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_Buffers_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"}",
           "format": "time_series",
           "legendFormat": "Buffers - Block device (e.g. harddisk) cache",
           "range": true,
@@ -3220,7 +3127,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_MemFree_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_MemFree_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"}",
           "format": "time_series",
           "legendFormat": "Unused - Free memory unassigned",
           "range": true,
@@ -3234,7 +3141,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "(node_memory_SwapTotal_bytes{instance=\"$node\",job=\"$job\"} - node_memory_SwapFree_bytes{instance=\"$node\",job=\"$job\"})",
+          "expr": "(node_memory_SwapTotal_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"} - node_memory_SwapFree_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"})",
           "format": "time_series",
           "legendFormat": "Swap - Swap space used",
           "range": true,
@@ -3248,7 +3155,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "node_memory_HardwareCorrupted_bytes{instance=\"$node\",job=\"$job\"}",
+          "expr": "node_memory_HardwareCorrupted_bytes{instance=\"node-exporter:9100\",job=\"node-exporter\"}",
           "format": "time_series",
           "legendFormat": "Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working",
           "range": true,
@@ -3540,7 +3447,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 12,
-        "y": 35,
+        "y": 41,
         "w": 6,
         "h": 7
       },
@@ -3551,7 +3458,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(node_disk_io_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_disk_io_time_seconds_total{instance=\"node-exporter:9100\",job=\"node-exporter\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "{{device}} - General IO",
           "range": true,
@@ -3565,7 +3472,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "rate(node_disk_flush_requests_time_seconds_total{instance=\"$node\",job=\"$job\"}[$__rate_interval])",
+          "expr": "rate(node_disk_flush_requests_time_seconds_total{instance=\"node-exporter:9100\",job=\"node-exporter\"}[$__rate_interval])",
           "interval": "",
           "legendFormat": "{{device}} - Flush (write cache)",
           "range": true,
@@ -3706,7 +3613,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 18,
-        "y": 35,
+        "y": 41,
         "w": 6,
         "h": 7
       },
@@ -3717,7 +3624,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(node_network_receive_bytes_total{instance=\"$node\",job=\"$job\",device=\"eth0\"}[$__rate_interval])*8",
+          "expr": "rate(node_network_receive_bytes_total{instance=\"node-exporter:9100\",job=\"node-exporter\",device=\"eth0\"}[$__rate_interval])*8",
           "format": "time_series",
           "legendFormat": "{{device}} - Rx in",
           "range": true,
@@ -3731,7 +3638,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "rate(node_network_transmit_bytes_total{instance=\"$node\",job=\"$job\",device=\"eth0\"}[$__rate_interval])*8",
+          "expr": "rate(node_network_transmit_bytes_total{instance=\"node-exporter:9100\",job=\"node-exporter\",device=\"eth0\"}[$__rate_interval])*8",
           "format": "time_series",
           "legendFormat": "{{device}} - Tx out",
           "range": true,
@@ -3868,7 +3775,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 42,
+        "y": 48,
         "w": 24,
         "h": 1
       },
@@ -3880,7 +3787,7 @@
       "type": "logs",
       "gridPos": {
         "x": 0,
-        "y": 43,
+        "y": 49,
         "w": 12,
         "h": 8
       },
@@ -3892,7 +3799,7 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{container=~\".*backend.*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"INFO\"",
+          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"INFO\"",
           "queryType": "range",
           "refId": "A",
           "datasource": {
@@ -3930,7 +3837,7 @@
       "type": "logs",
       "gridPos": {
         "x": 12,
-        "y": 43,
+        "y": 49,
         "w": 12,
         "h": 8
       },
@@ -3942,7 +3849,7 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{container=~\".*backend.*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"WARN\"",
+          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"WARN\"",
           "queryType": "range",
           "refId": "A",
           "datasource": {
@@ -3980,7 +3887,7 @@
       "type": "logs",
       "gridPos": {
         "x": 0,
-        "y": 51,
+        "y": 57,
         "w": 12,
         "h": 8
       },
@@ -3990,7 +3897,7 @@
       },
       "targets": [
         {
-          "expr": "{container=~\".*backend.*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"ERROR\"",
+          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"ERROR\"",
           "refId": "A",
           "datasource": {
             "type": "loki",
@@ -4027,7 +3934,7 @@
       "type": "timeseries",
       "gridPos": {
         "x": 12,
-        "y": 51,
+        "y": 57,
         "w": 12,
         "h": 8
       },
@@ -4039,7 +3946,7 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum by (level) (count_over_time({container=~\".*backend.*\"} | json | logger_name=~\"com.groovy.backend.*\" [1m]))",
+          "expr": "sum by (level) (count_over_time({container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" [1m]))",
           "legendFormat": "{{level}}",
           "queryType": "range",
           "refId": "A",
@@ -4169,6 +4076,156 @@
             ]
           }
         ]
+      },
+      "pluginVersion": "13.1.1",
+      "transparent": false
+    },
+    {
+      "id": 100,
+      "title": "서비스별 CPU 한눈에 보기",
+      "type": "bargauge",
+      "description": "서비스 6개 한눈에 비교 (현재값)",
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "process_cpu_usage{job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"} * 100",
+          "legendFormat": "{{job}}",
+          "range": true,
+          "instant": false,
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "hide": false
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color",
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 50,
+                "color": "yellow"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "pluginVersion": "13.1.1",
+      "transparent": false
+    },
+    {
+      "id": 101,
+      "title": "서비스별 Memory(Heap) 한눈에 보기",
+      "type": "bargauge",
+      "description": "서비스 6개 한눈에 비교 (현재값)",
+      "gridPos": {
+        "x": 12,
+        "y": 30,
+        "w": 12,
+        "h": 6
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\", job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"}) / 1024 / 1024",
+          "legendFormat": "{{job}}",
+          "range": true,
+          "instant": false,
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "hide": false
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "valueMode": "color",
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 10,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mbytes",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": 0,
+                "color": "green"
+              },
+              {
+                "value": 512,
+                "color": "yellow"
+              },
+              {
+                "value": 768,
+                "color": "red"
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
       },
       "pluginVersion": "13.1.1",
       "transparent": false
