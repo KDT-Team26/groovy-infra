@@ -13,6 +13,10 @@ spec:
     metadata:
       labels:
         app: prometheus
+      #checksum annotation을 통해 ConfigMap이 변경될 때마다 Deployment가 rolling update 되도록 함
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/prometheus-configmap.yaml") . | sha256sum }}
+        checksum/alert-rules: {{ include (print $.Template.BasePath "/prometheus-alert-rules-configmap.yaml") . | sha256sum }}
     spec:
       containers:
         - name: prometheus
