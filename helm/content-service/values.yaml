@@ -2,7 +2,7 @@ contentService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-content-service
-    tag: "3cdf206df8bb3681b8855359a8054ce9248f68c7"
+    tag: "6987e87279d41ad2e16ec5a0e6f42e9ff6052c43"
   port: 8083
   resources:
     requests:
@@ -14,7 +14,7 @@ contentService:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:

@@ -2,7 +2,7 @@ notificationService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-notification-service
-    tag: "d6feff3e5a43fb7f96a756506013b3a5b034e595"
+    tag: "de8b7258afbeb505cd820ca0732cd33eb4d40c0e"
   port: 8085
   resources:
     requests:
@@ -14,7 +14,7 @@ notificationService:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:

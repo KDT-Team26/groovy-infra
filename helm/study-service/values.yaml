@@ -2,7 +2,7 @@ studyService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-study-service
-    tag: "fee36e74da409e1370df908785b06fee21cc50f8"
+    tag: "113cb8e0af4ea62b727e04c34fc027b6271a6495"
   port: 8082
   resources:
     requests:
@@ -14,7 +14,7 @@ studyService:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:

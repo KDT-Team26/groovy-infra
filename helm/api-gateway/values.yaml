@@ -4,7 +4,7 @@ apiGateway:
     # Docker Hub 리포지토리명은 groovy-gateway-service(서비스 레포명과 동일)로 생성됐다 —
     # 차트/values 키 이름은 api-gateway/apiGateway를 그대로 쓰지만 이미지 리포지토리명만 다르다.
     repository: ttt103/groovy-gateway-service
-    tag: "71075cba4d75b47e0e1b58de8931aa2de64676d8"
+    tag: "8b32a57fa9eb8f84fb165a44d5c7371bce5371cd"
   port: 8080
   managementPort: 8090 # actuator port로 새로 하나 만들었습니다. - 변
   resources:
@@ -17,7 +17,7 @@ apiGateway:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
 

@@ -2,7 +2,7 @@ identityService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-identity-service
-    tag: "11ad5bd2e73652f656c62b48ccfe2c7ca6322fb8"
+    tag: "2d78f0917d5ef0d3a8e05c45086f5844955d168f"
   port: 8081
   resources:
     requests:
@@ -14,7 +14,7 @@ identityService:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 3
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
