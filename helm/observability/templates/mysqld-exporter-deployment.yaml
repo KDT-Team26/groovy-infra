@@ -1,33 +1,38 @@
+{{- range $name, $instance := .Values.mysqldExporter.instances }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysqld-exporter
+  name: {{ $name }}-mysqld-exporter
   labels:
-    app: mysqld-exporter
+    app: {{ $name }}-mysqld-exporter
+    groovy.io/service: {{ $name }}
 spec:
-  replicas: {{ .Values.mysqldExporter.replicaCount }}
+  replicas: {{ $.Values.mysqldExporter.replicaCount }}
   selector:
     matchLabels:
-      app: mysqld-exporter
+      app: {{ $name }}-mysqld-exporter
   template:
     metadata:
       labels:
-        app: mysqld-exporter
+        app: {{ $name }}-mysqld-exporter
+        groovy.io/service: {{ $name }}
     spec:
       containers:
         - name: mysqld-exporter
-          image: "{{ .Values.mysqldExporter.image.repository }}:{{ .Values.mysqldExporter.image.tag }}"
-          imagePullPolicy: {{ .Values.mysqldExporter.image.pullPolicy }}
+          image: "{{ $.Values.mysqldExporter.image.repository }}:{{ $.Values.mysqldExporter.image.tag }}"
+          imagePullPolicy: {{ $.Values.mysqldExporter.image.pullPolicy }}
           args:
-            - "--mysqld.address={{ .Values.mysqldExporter.mysql.host }}:{{ .Values.mysql.port }}"
-            - "--mysqld.username={{ .Values.mysqldExporter.mysql.username }}"
+            - "--mysqld.address={{ $instance.host }}:{{ $.Values.mysql.port }}"
+            - "--mysqld.username={{ $.Values.mysqldExporter.mysql.username }}"
           env:
             - name: MYSQLD_EXPORTER_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
+                  name: {{ $name }}-mysql-secret
                   key: MYSQL_ROOT_PASSWORD
           ports:
             - name: metrics
-              containerPort: {{ .Values.mysqldExporter.port }}
+              containerPort: {{ $.Values.mysqldExporter.port }}
               protocol: TCP
+{{- end }}

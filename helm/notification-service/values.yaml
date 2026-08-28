@@ -18,7 +18,7 @@ notificationService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: mysql
+    host: notification-mysql
     port: 3306
     name: notification_db
     username: notification_service

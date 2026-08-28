@@ -7,8 +7,8 @@
 # 이 스크립트는 클러스터에 아무것도 적용(apply)하지 않는다 — 순수하게 "평문 -> 암호문" 변환만
 # 하고 결과를 화면에 출력한다. 그 출력을 사람이 직접 확인하고 values.yaml에 붙여넣는 방식이다.
 #
-# 실제로 필요한 값은 11개다(서비스 DB 비밀번호 5 + grafana 1 + alertmanager slack webhook 1 +
-# mysql 2 + kafka 2).
+# 실제로 필요한 값은 19개다(서비스 DB 비밀번호 5 + grafana 1 + alertmanager slack webhook 1 +
+# 서비스별 MySQL 관리자 비밀번호 10(root/provisioner 각 5) + kafka 2).
 # db-init용 SQL에도 같은 서비스 비밀번호가 또 들어가지만, 이 스크립트는 한 번 입력받은 값을
 # 재사용만 하지 다시 묻지 않는다(재입력을 시키면 오히려 오타로 두 곳 값이 달라질 위험만 커짐).
 #
@@ -19,28 +19,53 @@
 #   SVC_IDENTITY_DB_PW=... SVC_STUDY_DB_PW=... SVC_CONTENT_DB_PW=... \
 #   SVC_CALENDAR_DB_PW=... SVC_NOTIFICATION_DB_PW=... GRAFANA_ADMIN_PW=... \
 #   ALERTMANAGER_SLACK_WEBHOOK_URL=... \
-#   MYSQL_ROOT_PW=... MYSQL_PROVISIONER_PW=... KAFKA_BROKER_PW=... KAFKA_APP_PW=... \
-#   ./seal-secret-values.sh
-#   (일부만 환경변수로 주고 나머진 프롬프트로 받는 것도 가능 — 값이 없는 것만 물어봄)
-#
+#   MYSQL_IDENTITY_ROOT_PW=... MYSQL_IDENTITY_PROVISIONER_PW=... \
+#   MYSQL_STUDY_ROOT_PW=... MYSQL_STUDY_PROVISIONER_PW=... \
+#   MYSQL_CONTENT_ROOT_PW=... MYSQL_CONTENT_PROVISIONER_PW=... \
+#   MYSQL_CALENDAR_ROOT_PW=... MYSQL_CALENDAR_PROVISIONER_PW=... \
+#   MYSQL_NOTIFICATION_ROOT_PW=... MYSQL_NOTIFICATION_PROVISIONER_PW=... \
+#   KAFKA_BROKER_PW=... KAFKA_APP_PW=... \
 # NAMESPACE=other-ns ./seal-secret-values.sh  로 대상 네임스페이스도 바꿀 수 있다(기본 groovy-kubernates).
 
 set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-groovy-kubernates}"
+SEALED_SECRETS_CERT="${SEALED_SECRETS_CERT:-}"
+
 BOOTSTRAP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_ROOT="$(cd "${BOOTSTRAP_DIR}/.." && cd .. && pwd)"
 
-command -v kubeseal >/dev/null || { echo "kubeseal CLI가 필요합니다. https://github.com/bitnami-labs/sealed-secrets#installation 참고"; exit 1; }
+command -v kubeseal >/dev/null || {
+  echo "kubeseal CLI가 필요합니다."
+  exit 1
+}
+
+if [[ -n "${SEALED_SECRETS_CERT}" && ! -f "${SEALED_SECRETS_CERT}" ]]; then
+  echo "Sealed Secrets 공개 인증서를 찾을 수 없습니다: ${SEALED_SECRETS_CERT}"
+  exit 1
+fi
 
 # 값 하나를 암호화해서 암호문(값만, key: 접두어 없이)을 출력한다.
 # kubeseal --format yaml 출력은 spec.encryptedData 아래 4-space 들여쓰기로 "KEY: 암호문"이 나온다.
 seal_literal() {
   local secret_name="$1" key="$2" value="$3"
+  local kubeseal_args=(
+    --format yaml
+    -n "${NAMESPACE}"
+  )
+
+  if [[ -n "${SEALED_SECRETS_CERT}" ]]; then
+    kubeseal_args+=(--cert "${SEALED_SECRETS_CERT}")
+  fi
+
   kubectl create secret generic "${secret_name}" -n "${NAMESPACE}" \
-    --dry-run=client --from-literal="${key}=${value}" -o yaml \
-    | kubeseal --format yaml -n "${NAMESPACE}" \
-    | grep -F "    ${key}:" | head -1 | sed -E "s/^    [^:]+: *//"
+    --dry-run=client \
+    --from-literal="${key}=${value}" \
+    -o yaml \
+    | kubeseal "${kubeseal_args[@]}" \
+    | grep -F "    ${key}:" \
+    | head -1 \
+    | sed -E "s/^    [^:]+: *//"
 }
 
 # 환경변수(envname)가 이미 설정돼 있으면 그 값을 그대로 쓰고, 없을 때만 프롬프트로 물어본다.
@@ -81,10 +106,21 @@ echo "  grafanaAdminPassword: $(seal_literal grafana-secret GF_SECURITY_ADMIN_PA
 echo "  slackWebhookUrl: $(seal_literal alertmanager-secret slack_webhook_url "${alertmanager_webhook}")"
 echo
 
-# ── 2) platform/mysql-secret.yaml ──
-read_secret "MySQL root 비밀번호" mysql_root_pw MYSQL_ROOT_PW
-read_secret "MySQL provisioner 비밀번호" mysql_prov_pw MYSQL_PROVISIONER_PW
-provisioner_sql=$(cat <<SQL
+# ── 2) platform/mysql-secret.yaml — 서비스별 MySQL 관리자 credential 분리 ──
+echo "--- helm/platform/values.yaml (mysql) ---"
+echo "sealedSecretData:"
+echo "  mysql:"
+
+for svc in identity study content calendar notification; do
+  svc_upper=$(printf '%s' "${svc}" | tr '[:lower:]' '[:upper:]')
+
+  root_env="MYSQL_${svc_upper}_ROOT_PW"
+  prov_env="MYSQL_${svc_upper}_PROVISIONER_PW"
+
+  read_secret "${svc} MySQL root 비밀번호" mysql_root_pw "${root_env}"
+  read_secret "${svc} MySQL provisioner 비밀번호" mysql_prov_pw "${prov_env}"
+
+  provisioner_sql=$(cat <<SQL
 CREATE USER IF NOT EXISTS 'provisioner'@'%'
   IDENTIFIED BY '${mysql_prov_pw}';
 
@@ -93,12 +129,14 @@ GRANT ALL PRIVILEGES ON *.* TO 'provisioner'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 SQL
 )
-echo "--- helm/platform/values.yaml (mysql) ---"
-echo "sealedSecretData:"
-echo "  mysql:"
-echo "    rootPassword: $(seal_literal mysql-secret MYSQL_ROOT_PASSWORD "${mysql_root_pw}")"
-echo "    provisionerPassword: $(seal_literal mysql-secret MYSQL_PROVISIONER_PASSWORD "${mysql_prov_pw}")"
-echo "    provisionerInitSql: $(seal_literal mysql-secret 00-provisioner-init.sql "${provisioner_sql}")"
+
+  secret_name="${svc}-mysql-secret"
+
+  echo "    ${svc}:"
+  echo "      rootPassword: $(seal_literal "${secret_name}" MYSQL_ROOT_PASSWORD "${mysql_root_pw}")"
+  echo "      provisionerPassword: $(seal_literal "${secret_name}" MYSQL_PROVISIONER_PASSWORD "${mysql_prov_pw}")"
+  echo "      provisionerInitSql: $(seal_literal "${secret_name}" 00-provisioner-init.sql "${provisioner_sql}")"
+done
 echo
 
 # ── 3) platform/db-init-secret.yaml — 위 1)에서 이미 입력받은 서비스별 비밀번호를 그대로

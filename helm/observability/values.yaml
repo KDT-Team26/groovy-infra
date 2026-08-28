@@ -6,8 +6,18 @@ mysqldExporter:
     pullPolicy: IfNotPresent
   port: 9104
   mysql:
-    host: mysql
     username: root
+  instances:
+    identity:
+      host: identity-mysql
+    study:
+      host: study-mysql
+    content:
+      host: content-mysql
+    calendar:
+      host: calendar-mysql
+    notification:
+      host: notification-mysql
 
 kafkaExporter:
   replicaCount: 1

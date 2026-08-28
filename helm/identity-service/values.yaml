@@ -18,7 +18,7 @@ identityService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: mysql
+    host: identity-mysql
     port: 3306
     name: identity_db
     username: identity_service
