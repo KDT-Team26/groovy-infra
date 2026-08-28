@@ -21,6 +21,7 @@ spec:
         # 계정이 응답할 때까지 직접 재시도한다(최대 3분, 3초 간격 60회).
         - name: wait-for-mysql
           image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
           command:
             - sh
             - -c
@@ -43,6 +44,7 @@ spec:
       containers:
         - name: db-init
           image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
           command:
             - sh
             - -c

@@ -11,6 +11,12 @@ calendarService:
     limits:
       cpu: "500m"
       memory: "1Gi"
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
   database:
     host: mysql
     port: 3306

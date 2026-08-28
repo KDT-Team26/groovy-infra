@@ -5,7 +5,9 @@ metadata:
   labels:
     app: identity-service
 spec:
+  {{- if not .Values.identityService.hpa.enabled }}
   replicas: {{ .Values.identityService.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: identity-service
@@ -17,6 +19,7 @@ spec:
       containers:
         - name: identity-service
           image: "{{ .Values.identityService.image.repository }}:{{ .Values.identityService.image.tag }}"
+          imagePullPolicy: {{ .Values.identityService.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: identity-service-config

@@ -5,7 +5,9 @@ metadata:
   labels:
     app: frontend
 spec:
+  {{- if not .Values.frontend.hpa.enabled }}
   replicas: {{ .Values.frontend.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: frontend

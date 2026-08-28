@@ -152,4 +152,11 @@ echo "    appJaasConfig: $(seal_literal kafka-secret app-jaas-config "${app_jaas
 echo "    adminclientConf: $(seal_literal kafka-secret adminclient.conf "${adminclient_conf}")"
 echo
 
+# ── 5) observability/kafka-exporter-secret.yaml ──
+# 기존 Kafka application 계정 비밀번호를 Kafka Exporter에서도 재사용한다.
+echo "--- helm/observability/values.yaml (kafka-exporter) ---"
+echo "sealedSecretData:"
+echo "  kafkaExporterPassword: $(seal_literal kafka-exporter-secret KAFKA_PASSWORD "${kafka_app_pw}")"
+echo
+
 echo "=== 완료. 위 sealedSecretData 블록들을 각 차트의 values.yaml에 병합해 넣으세요. ==="

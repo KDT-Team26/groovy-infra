@@ -5,7 +5,9 @@ metadata:
   labels:
     app: api-gateway
 spec:
+  {{- if not .Values.apiGateway.hpa.enabled }}
   replicas: {{ .Values.apiGateway.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: api-gateway
@@ -17,6 +19,7 @@ spec:
       containers:
         - name: api-gateway
           image: "{{ .Values.apiGateway.image.repository }}:{{ .Values.apiGateway.image.tag }}"
+          imagePullPolicy: {{ .Values.apiGateway.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: api-gateway-config

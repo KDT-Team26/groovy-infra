@@ -5,7 +5,9 @@ metadata:
   labels:
     app: study-service
 spec:
+  {{- if not .Values.studyService.hpa.enabled }}
   replicas: {{ .Values.studyService.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: study-service
@@ -17,6 +19,7 @@ spec:
       containers:
         - name: study-service
           image: "{{ .Values.studyService.image.repository }}:{{ .Values.studyService.image.tag }}"
+          imagePullPolicy: {{ .Values.studyService.image.pullPolicy }}
           envFrom:
             - configMapRef:
                 name: study-service-config

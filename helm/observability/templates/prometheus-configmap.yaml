@@ -52,6 +52,10 @@ data:
         static_configs:
           - targets: ["tempo:{{ .Values.tempo.httpPort }}"]
 
+      - job_name: kafka
+        static_configs:
+          - targets: ["kafka-exporter:{{ .Values.kafkaExporter.port }}"]
+
       - job_name: mysql
         static_configs:
           - targets: ["mysqld-exporter:{{ .Values.mysqldExporter.port }}"]
@@ -69,3 +73,7 @@ data:
         metrics_path: /api/v1/nodes/minikube/proxy/metrics/cadvisor
         static_configs:
           - targets: ["kubernetes.default.svc:443"]
+
+      - job_name: kube-state-metrics
+        static_configs:
+          - targets: ["kube-state-metrics.kube-system.svc.cluster.local:8080"]
