@@ -1,0 +1,16 @@
+{{- if .Values.prometheus.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: groovy-prometheus-data
+  labels:
+    app: prometheus
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+
+  resources:
+    requests:
+      storage: {{ .Values.prometheus.persistence.size }}
+{{- end }}
