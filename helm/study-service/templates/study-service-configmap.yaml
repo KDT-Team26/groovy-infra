@@ -6,7 +6,6 @@ metadata:
     app: study-service
 data:
   SPRING_DEV_DB_URL: {{ printf "jdbc:mysql://%s:%v/%s?%s" .Values.studyService.database.host .Values.studyService.database.port .Values.studyService.database.name .Values.studyService.database.parameters | quote }}
-  SPRING_DEV_DB_USERNAME: {{ .Values.studyService.database.username | quote }}
   DB_POOL_MAX_SIZE: {{ .Values.studyService.dbPool.maxSize | quote }}
   DB_POOL_MIN_IDLE: {{ .Values.studyService.dbPool.minIdle | quote }}
   JWT_JWKS_URL: {{ .Values.studyService.jwt.jwksUrl | quote }}

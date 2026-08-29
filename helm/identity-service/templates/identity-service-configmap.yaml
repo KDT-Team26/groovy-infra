@@ -6,7 +6,6 @@ metadata:
     app: identity-service
 data:
   SPRING_DEV_DB_URL: {{ printf "jdbc:mysql://%s:%v/%s?%s" .Values.identityService.database.host .Values.identityService.database.port .Values.identityService.database.name .Values.identityService.database.parameters | quote }}
-  SPRING_DEV_DB_USERNAME: {{ .Values.identityService.database.username | quote }}
   DB_POOL_MAX_SIZE: {{ .Values.identityService.dbPool.maxSize | quote }}
   DB_POOL_MIN_IDLE: {{ .Values.identityService.dbPool.minIdle | quote }}
   CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}

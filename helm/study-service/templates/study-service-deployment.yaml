@@ -16,15 +16,27 @@ spec:
       labels:
         app: study-service
     spec:
+      serviceAccountName: study-service-sa
+      volumes:
+        - name: rds-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: study-rds-secrets
       containers:
         - name: study-service
           image: "{{ .Values.studyService.image.repository }}:{{ .Values.studyService.image.tag }}"
           imagePullPolicy: {{ .Values.studyService.image.pullPolicy }}
+          volumeMounts:
+            - name: rds-secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
           envFrom:
             - configMapRef:
                 name: study-service-config
             - secretRef:
-                name: study-service-secret
+                name: study-rds-secret
           env:
             - name: KAFKA_SASL_JAAS_CONFIG
               valueFrom:

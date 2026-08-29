@@ -16,15 +16,27 @@ spec:
       labels:
         app: notification-service
     spec:
+      serviceAccountName: notification-service-sa
+      volumes:
+        - name: rds-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: notification-rds-secrets
       containers:
         - name: notification-service
           image: "{{ .Values.notificationService.image.repository }}:{{ .Values.notificationService.image.tag }}"
           imagePullPolicy: {{ .Values.notificationService.image.pullPolicy }}
+          volumeMounts:
+            - name: rds-secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
           envFrom:
             - configMapRef:
                 name: notification-service-config
             - secretRef:
-                name: notification-service-secret
+                name: notification-rds-secret
           env:
             - name: KAFKA_SASL_JAAS_CONFIG
               valueFrom:

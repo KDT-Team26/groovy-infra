@@ -6,7 +6,6 @@ metadata:
     app: notification-service
 data:
   SPRING_DEV_DB_URL: {{ printf "jdbc:mysql://%s:%v/%s?%s" .Values.notificationService.database.host .Values.notificationService.database.port .Values.notificationService.database.name .Values.notificationService.database.parameters | quote }}
-  SPRING_DEV_DB_USERNAME: {{ .Values.notificationService.database.username | quote }}
   DB_POOL_MAX_SIZE: {{ .Values.notificationService.dbPool.maxSize | quote }}
   DB_POOL_MIN_IDLE: {{ .Values.notificationService.dbPool.minIdle | quote }}
   JWT_JWKS_URL: {{ .Values.notificationService.jwt.jwksUrl | quote }}

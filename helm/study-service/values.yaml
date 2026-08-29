@@ -22,7 +22,6 @@ studyService:
     host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: study_db
-    username: study_service
     parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
   dbPool:
     maxSize: "10"
@@ -44,7 +43,3 @@ studyService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
-
-sealedSecretData:
-  studyService:
-    dbPassword: AgA/0w/IOfVh0XbiVByvAWn2zg5YlEYFYjAn3vCUy+4gtyrwjGnSe+GV5TyemN3lIKvE9J8hGRceUWojSOJd2rcxd8pUAd0lLAmjQobyOEvSr9KrEZGkx6Q4wi84mcLrk+k79509sfqLRC1SwQGczcb1jI1ztgDWXFXzcxUH6nmBA2D2R6e/J2EevforjsAr7anf5442DrcIUaoUlVVXPzAXHw9JaKJraL+nrLQSFQ5/n8N0CoxtOQ+CbQBNb3khdVyXNtTZMbVEbYfuqClnbDV0iZo+f2P48iI6RgP+jR7u8/ayCD6N87f/LX9g1b78V5ixPYIoJWdf19hRbL2lRjEW2RzTS/zPTx2wbxnV60LwSL9j2TaL1rLKy6rihunkIw5AByPd0gKjPR9nXxXe3pImxGQMcVJeXbpgkPwavaSF93LNu2YXRxMv3+hffpICRgkAIuJegM37q/UOdtBF4JPwUSG+YreA1Tl78cznmJkyxLCakQtw2TL9mrKR3MORaTdvq09qqWoKOXfMCTiImqb539bw9Id33rfEBYgAh7yR2IsC5tC/KdAhx5c25eGDuVEbbIoeNOXTXC3FLx6xhGsg/ge6XAmuYwpql/7Z72I4EjR+IDHjIubNJ6Ks7oeuNqrDxcKObud98PI/YtmSXf1OodCsYAOmgQgzHEYs5uf+oWo/DEX0sf9XU9reLHUu3XkFJTlS4kSBZOc5

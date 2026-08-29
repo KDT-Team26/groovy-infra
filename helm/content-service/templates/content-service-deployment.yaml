@@ -16,15 +16,27 @@ spec:
       labels:
         app: content-service
     spec:
+      serviceAccountName: content-service-sa
+      volumes:
+        - name: rds-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: content-rds-secrets
       containers:
         - name: content-service
           image: "{{ .Values.contentService.image.repository }}:{{ .Values.contentService.image.tag }}"
           imagePullPolicy: {{ .Values.contentService.image.pullPolicy }}
+          volumeMounts:
+            - name: rds-secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
           envFrom:
             - configMapRef:
                 name: content-service-config
             - secretRef:
-                name: content-service-secret
+                name: content-rds-secret
           env:
             - name: KAFKA_SASL_JAAS_CONFIG
               valueFrom:

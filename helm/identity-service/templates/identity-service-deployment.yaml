@@ -16,15 +16,27 @@ spec:
       labels:
         app: identity-service
     spec:
+      serviceAccountName: identity-service-sa
+      volumes:
+        - name: rds-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: identity-rds-secrets
       containers:
         - name: identity-service
           image: "{{ .Values.identityService.image.repository }}:{{ .Values.identityService.image.tag }}"
           imagePullPolicy: {{ .Values.identityService.image.pullPolicy }}
+          volumeMounts:
+            - name: rds-secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
           envFrom:
             - configMapRef:
                 name: identity-service-config
             - secretRef:
-                name: identity-service-secret
+                name: identity-rds-secret
           env:
             - name: JAVA_TOOL_OPTIONS
               value: {{ .Values.identityService.javaOpts | quote }}

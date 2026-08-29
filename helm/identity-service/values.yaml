@@ -22,7 +22,6 @@ identityService:
     host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: identity_db
-    username: identity_service
     parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
   dbPool:
     maxSize: "10"
@@ -31,7 +30,3 @@ identityService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
-
-sealedSecretData:
-  identityService:
-    dbPassword: AgBvovaKaa50Yyg4YeSv8H7nk0PRaBBcPUss0B3KSYwSf/IYWbDcBAUzxKKC2dZgADlW9o7sPlcdqsXaJO1ee4gyxc9N8Wf+YL/+mL0sWIYi0t6gLkr3Vj507BnuQiK2w0p8cU3DE7xoAnCR55vsmTHVfthY2MIdDYNYT5kvtZtQeQ73uxv6SpjdMpFVr8tUQAG9FOfmyQZ9eMYda2ylvj58EONpzatsaLdeOo53JlL8t7y3hlwFcUF/VR78iILS3ac6FSiyu5KAnIsV/FQ4I5xSwENuCXujU07DfCEBwWyIBtH/+sZqc8L/zVAeK7hwDTIdYX8a5gMqt9Z+FOnqyJtC20OLYg9KKfZ/rytMdFivhUjQgt6LMtDJatidCI8J1vu0mLPYh6rDSdU8CQolCISRKaCFlTN53Nth9KiB+tDxOCFOhVoawWQpCLvK2nL32X78xUCvlhmN5Aw8WHZmSCIgrO1HbAVA09zJP4YGkgxaV9pDQddbKbWEb5BFIyH0wOlPH+o/Rvdd+J7TAOnyMDlHHhg7AjSTXLU8ZIj4XOHAlOEVXYug+ZNbcHjvNYtNNGSdNkKrBxC0yJ7nKyTbkxyXRXDOktIU3KNRdM5sxAlT7a5PIxFHmk3P6k6SEaJyjDQGRaruFLSbYqog0GvNtvzyAzrkxC8Fxc0bsIgPW+P6UJ6yheEQR+BqvQMf7NGaVdmnyl8ZFX1c39V7

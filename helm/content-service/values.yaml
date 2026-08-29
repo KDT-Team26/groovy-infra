@@ -22,7 +22,6 @@ contentService:
     host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: content_db
-    username: content_service
     parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
   dbPool:
     maxSize: "10"
@@ -48,7 +47,3 @@ contentService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
-
-sealedSecretData:
-  contentService:
-    dbPassword: AgCb6e90C+fDp7TDGqhaTTwba4rWCRsHpukvqUvUKVmRhKdbIGuWEVfja4fkfEkQpjshh4SdkvnkOK1FoemBB29FUBMEIt/nWt6G8nzv7yFodTyMJG1+XAGogbhbnLG9BBlvm4HHFvuqJI51IREc6CuXK8M0GT8Eplrp8HlCHqz+ksCWOOZXiFg35EGGCg/oGNh9297qkg353cAWkPgQiturFPKPmxskScbRxMa8DnHhSheYlqPg2jYvLECiYU0pQ+h91VMoQ0wQhi97nkAW6VDntF8P30U+JLZH0Nc726/CSbKWwFBS1ck1mXU6i5pALJzFwz1J6WhI7FKd7nlMyYSO92xXKvK4aNVVFHbPtLpIfnMUuyTiQxGXkv62z9hT4NwwneFnJgs1cLWr9AIGMNLaTMTZ+G0R3KcOnlNJj8qoZYzMTr+ysSOzhfu7iZ5cTq1dnwXJSdXogGfVWhn8+IejQc3WGFqMAzMTO3KmlwWEbyCePjWqDPTruTsfVFIQue2MLMRoFhV5U8n6vFk0/8wVQW6z3re9KBjfkCyNIsjkjDkH1Ue+/T5jJU2HV98PhcbpgTgyYTIja3cr7yrLkRVmDtqF3Z+TQMcTaiGysv5KqvRr5klbgEm0Vs0kO1IZXUpbVkqcxzJg9YveQv6YDezdhVJbUWzrVI/o5gzUcBbft4fIWIUdUA3SRnVmEY5XkSv9dzTX/2wo+E6V

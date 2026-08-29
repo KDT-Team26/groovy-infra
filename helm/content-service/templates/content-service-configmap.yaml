@@ -6,7 +6,6 @@ metadata:
     app: content-service
 data:
   SPRING_DEV_DB_URL: {{ printf "jdbc:mysql://%s:%v/%s?%s" .Values.contentService.database.host .Values.contentService.database.port .Values.contentService.database.name .Values.contentService.database.parameters | quote }}
-  SPRING_DEV_DB_USERNAME: {{ .Values.contentService.database.username | quote }}
   DB_POOL_MAX_SIZE: {{ .Values.contentService.dbPool.maxSize | quote }}
   DB_POOL_MIN_IDLE: {{ .Values.contentService.dbPool.minIdle | quote }}
   JWT_JWKS_URL: {{ .Values.contentService.jwt.jwksUrl | quote }}

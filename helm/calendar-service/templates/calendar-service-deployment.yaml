@@ -16,15 +16,27 @@ spec:
       labels:
         app: calendar-service
     spec:
+      serviceAccountName: calendar-service-sa
+      volumes:
+        - name: rds-secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: calendar-rds-secrets
       containers:
         - name: calendar-service
           image: "{{ .Values.calendarService.image.repository }}:{{ .Values.calendarService.image.tag }}"
           imagePullPolicy: {{ .Values.calendarService.image.pullPolicy }}
+          volumeMounts:
+            - name: rds-secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
           envFrom:
             - configMapRef:
                 name: calendar-service-config
             - secretRef:
-                name: calendar-service-secret
+                name: calendar-rds-secret
           env:
             - name: KAFKA_SASL_JAAS_CONFIG
               valueFrom:
