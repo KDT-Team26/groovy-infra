@@ -25,6 +25,9 @@ spec:
                 name: identity-service-config
             - secretRef:
                 name: identity-service-secret
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ .Values.identityService.javaOpts | quote }}
           ports:
             - containerPort: {{ .Values.identityService.port }}
               protocol: TCP
