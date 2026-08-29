@@ -13,7 +13,7 @@ contentService:
       memory: "1Gi"
   javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
   hpa:
-    enabled: true
+    enabled: false # TEMP: JVM 메모리 옵션 전/후 비교 테스트 위해 replica=1 고정 (테스트 끝나면 true로 복구)
     minReplicas: 1
     maxReplicas: 2
     targetCPUUtilizationPercentage: 80
