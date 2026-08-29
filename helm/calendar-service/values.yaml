@@ -19,7 +19,7 @@ calendarService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: mysql
+    host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: calendar_db
     username: calendar_service
