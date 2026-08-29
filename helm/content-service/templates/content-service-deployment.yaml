@@ -31,6 +31,8 @@ spec:
                 secretKeyRef:
                   name: kafka-secret
                   key: app-jaas-config
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ .Values.contentService.javaOpts | quote }}
           ports:
             - containerPort: {{ .Values.contentService.port }}
               protocol: TCP

@@ -11,6 +11,7 @@ calendarService:
     limits:
       cpu: "500m"
       memory: "1Gi"
+  javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
   hpa:
     enabled: true
     minReplicas: 1
