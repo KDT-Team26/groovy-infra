@@ -5,6 +5,13 @@ metadata:
   labels:
     app: notification-service
 spec:
+  # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+  revisionHistoryLimit: {{ .Values.notificationService.rollout.revisionHistoryLimit }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.notificationService.rollout.maxUnavailable }}
+      maxSurge: {{ .Values.notificationService.rollout.maxSurge }}
   {{- if not .Values.notificationService.hpa.enabled }}
   replicas: {{ .Values.notificationService.replicaCount }}
   {{- end }}
@@ -36,7 +43,21 @@ spec:
           ports:
             - containerPort: {{ .Values.notificationService.port }}
               protocol: TCP
+          # health probe(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+          {{- if .Values.notificationService.probes.enabled }}
+          startupProbe:
+            {{- toYaml .Values.notificationService.probes.startup | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.notificationService.probes.readiness | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.notificationService.probes.liveness | nindent 12 }}
+          {{- end }}
           {{- if .Values.notificationService.resources }}
           resources:
             {{- toYaml .Values.notificationService.resources | nindent 12 }}
           {{- end }}
+      # HA 프로파일(#91) — 비어 있으면 렌더 안 됨. 활성화 방법은 values-ha.yaml 참고.
+      {{- with .Values.notificationService.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

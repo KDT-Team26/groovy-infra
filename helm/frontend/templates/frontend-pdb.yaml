@@ -1,0 +1,15 @@
+{{- if .Values.frontend.pdb.enabled }}
+# PodDisruptionBudget(#91) — 상세 설명은 identity-service-pdb.yaml 참고. replica>=2 에서만 켠다
+# (frontend 는 hpa.enabled=true 이므로 HA 는 hpa.minReplicas>=2 로 확보).
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  minAvailable: {{ .Values.frontend.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: frontend
+{{- end }}

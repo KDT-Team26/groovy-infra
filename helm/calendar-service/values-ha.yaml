@@ -1,0 +1,14 @@
+# HA 프로파일 (#91) — 상세 설명은 identity-service/values-ha.yaml 참고.
+# 활성화: argocd/apps/calendar-service.yaml 의 helm.valueFiles 에 - values-ha.yaml 추가.
+calendarService:
+  replicaCount: 2
+  pdb:
+    enabled: true
+    minAvailable: 1
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: calendar-service

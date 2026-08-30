@@ -5,6 +5,13 @@ metadata:
   labels:
     app: content-service
 spec:
+  # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+  revisionHistoryLimit: {{ .Values.contentService.rollout.revisionHistoryLimit }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.contentService.rollout.maxUnavailable }}
+      maxSurge: {{ .Values.contentService.rollout.maxSurge }}
   {{- if not .Values.contentService.hpa.enabled }}
   replicas: {{ .Values.contentService.replicaCount }}
   {{- end }}
@@ -36,7 +43,21 @@ spec:
           ports:
             - containerPort: {{ .Values.contentService.port }}
               protocol: TCP
+          # health probe(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+          {{- if .Values.contentService.probes.enabled }}
+          startupProbe:
+            {{- toYaml .Values.contentService.probes.startup | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.contentService.probes.readiness | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.contentService.probes.liveness | nindent 12 }}
+          {{- end }}
           {{- if .Values.contentService.resources }}
           resources:
             {{- toYaml .Values.contentService.resources | nindent 12 }}
           {{- end }}
+      # HA 프로파일(#91) — 비어 있으면 렌더 안 됨. 활성화 방법은 values-ha.yaml 참고.
+      {{- with .Values.contentService.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

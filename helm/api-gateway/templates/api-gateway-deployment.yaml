@@ -5,6 +5,13 @@ metadata:
   labels:
     app: api-gateway
 spec:
+  # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+  revisionHistoryLimit: {{ .Values.apiGateway.rollout.revisionHistoryLimit }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.apiGateway.rollout.maxUnavailable }}
+      maxSurge: {{ .Values.apiGateway.rollout.maxSurge }}
   {{- if not .Values.apiGateway.hpa.enabled }}
   replicas: {{ .Values.apiGateway.replicaCount }}
   {{- end }}
@@ -32,7 +39,22 @@ spec:
               # actuator port를 위한 management port 추가 - 변
             - containerPort: {{ .Values.apiGateway.managementPort }}
               name: management
+          # health probe(#90). actuator가 트래픽 포트(8080)가 아니라 관리 포트(management)로
+          # 분리돼 있어 probe도 management 포트를 본다. 상세 설명은 identity-service-deployment.yaml 참고.
+          {{- if .Values.apiGateway.probes.enabled }}
+          startupProbe:
+            {{- toYaml .Values.apiGateway.probes.startup | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.apiGateway.probes.readiness | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.apiGateway.probes.liveness | nindent 12 }}
+          {{- end }}
           {{- if .Values.apiGateway.resources }}
           resources:
             {{- toYaml .Values.apiGateway.resources | nindent 12 }}
           {{- end }}
+      # HA 프로파일(#91) — 비어 있으면 렌더 안 됨. 활성화 방법은 values-ha.yaml 참고.
+      {{- with .Values.apiGateway.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
