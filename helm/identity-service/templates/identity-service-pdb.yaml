@@ -1,0 +1,16 @@
+{{- if .Values.identityService.pdb.enabled }}
+# PodDisruptionBudget(#91) — 자발적 축출(노드 drain/업그레이드) 시 최소 가용 Pod 수를 보장한다.
+# replica=1 에서 켜면 노드 drain 자체가 막히므로 pdb.enabled 는 반드시 replica>=2(HA 프로파일,
+# values-ha.yaml)와 함께여야 한다. 그래서 기본값은 false.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: identity-service
+  labels:
+    app: identity-service
+spec:
+  minAvailable: {{ .Values.identityService.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: identity-service
+{{- end }}

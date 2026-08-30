@@ -30,6 +30,12 @@ identityService:
       periodSeconds: 20
       failureThreshold: 3
       timeoutSeconds: 3
+  # HA 프로파일(#91). 기본은 비활성 — 활성 값은 values-ha.yaml 에 있고,
+  # argocd/apps/identity-service.yaml 의 helm.valueFiles 에 - values-ha.yaml 을 추가하면 덮어쓴다.
+  pdb:
+    enabled: false
+    minAvailable: 1
+  topologySpreadConstraints: []
   resources:
     requests:
       cpu: "200m"

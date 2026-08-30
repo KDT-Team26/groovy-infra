@@ -55,3 +55,9 @@ spec:
           resources:
             {{- toYaml .Values.identityService.resources | nindent 12 }}
           {{- end }}
+      # replica>=2 일 때만 의미가 있어 값이 비어 있으면(현재 기본) 렌더되지 않는다.
+      # HA 프로파일(#91) 활성화 방법은 values-ha.yaml 참고.
+      {{- with .Values.identityService.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

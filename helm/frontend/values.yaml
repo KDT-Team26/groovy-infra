@@ -30,6 +30,12 @@ frontend:
       periodSeconds: 20
       failureThreshold: 3
       timeoutSeconds: 3
+  # HA 프로파일(#91) — 상세 설명은 identity-service/values.yaml 참고.
+  # frontend 는 hpa.enabled=true 라 replicaCount 대신 hpa.minReplicas 로 HA 확보(values-ha.yaml).
+  pdb:
+    enabled: false
+    minAvailable: 1
+  topologySpreadConstraints: []
   resources:
     requests:
       cpu: "50m"

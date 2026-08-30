@@ -26,6 +26,11 @@ calendarService:
       periodSeconds: 20
       failureThreshold: 3
       timeoutSeconds: 3
+  # HA 프로파일(#91) — 상세 설명은 identity-service/values.yaml 참고.
+  pdb:
+    enabled: false
+    minAvailable: 1
+  topologySpreadConstraints: []
   resources:
     requests:
       cpu: "200m"
