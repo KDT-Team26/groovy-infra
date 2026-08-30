@@ -1,9 +1,35 @@
 identityService:
-  replicaCount: 1
+  replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
     repository: ttt103/groovy-identity-service
     tag: "2d78f0917d5ef0d3a8e05c45086f5844955d168f"
+    # 태그가 sha 고정이라 K8s 기본값은 IfNotPresent지만, 6개 서비스 간 일관성을 위해 명시.
+    pullPolicy: IfNotPresent
   port: 8081
+  # 롤아웃 안전장치(#90): revisionHistoryLimit 로 되돌릴 ReplicaSet 이력 보존,
+  # maxUnavailable:0 으로 새 Pod가 Ready 되기 전엔 구 Pod 유지.
+  rollout:
+    revisionHistoryLimit: 5
+    maxUnavailable: 0
+    maxSurge: 1
+  # health probe(#90). 각 probe 는 완결된 k8s probe 스펙이라 템플릿은 toYaml 로 그대로 렌더.
+  # startup.failureThreshold * periodSeconds = 최대 허용 기동시간(여기선 300s).
+  probes:
+    enabled: true
+    startup:
+      httpGet: { path: /actuator/health, port: 8081 }
+      periodSeconds: 10
+      failureThreshold: 30
+    readiness:
+      httpGet: { path: /actuator/health, port: 8081 }
+      periodSeconds: 10
+      failureThreshold: 3
+      timeoutSeconds: 3
+    liveness:
+      httpGet: { path: /actuator/health, port: 8081 }
+      periodSeconds: 20
+      failureThreshold: 3
+      timeoutSeconds: 3
   resources:
     requests:
       cpu: "200m"

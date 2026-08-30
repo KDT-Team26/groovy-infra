@@ -5,6 +5,13 @@ metadata:
   labels:
     app: frontend
 spec:
+  # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+  revisionHistoryLimit: {{ .Values.frontend.rollout.revisionHistoryLimit }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.frontend.rollout.maxUnavailable }}
+      maxSurge: {{ .Values.frontend.rollout.maxSurge }}
   {{- if not .Values.frontend.hpa.enabled }}
   replicas: {{ .Values.frontend.replicaCount }}
   {{- end }}
@@ -26,6 +33,15 @@ spec:
           ports:
             - containerPort: {{ .Values.frontend.port }}
               protocol: TCP
+          # health probe(#90). 정적 파일 서버(serve)라 actuator가 없어 GET / (index.html) 200 으로 판정.
+          {{- if .Values.frontend.probes.enabled }}
+          startupProbe:
+            {{- toYaml .Values.frontend.probes.startup | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.frontend.probes.readiness | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.frontend.probes.liveness | nindent 12 }}
+          {{- end }}
           {{- if .Values.frontend.resources }}
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}

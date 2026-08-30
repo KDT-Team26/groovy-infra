@@ -5,8 +5,31 @@ apiGateway:
     # 차트/values 키 이름은 api-gateway/apiGateway를 그대로 쓰지만 이미지 리포지토리명만 다르다.
     repository: ttt103/groovy-gateway-service
     tag: "8b32a57fa9eb8f84fb165a44d5c7371bce5371cd"
+    pullPolicy: IfNotPresent
   port: 8080
   managementPort: 8090 # actuator port로 새로 하나 만들었습니다. - 변
+  # 롤아웃 안전장치 + health probe(#90) — 상세 설명은 identity-service/values.yaml 참고.
+  # probe port(8090)는 위 managementPort 와 일치해야 한다.
+  rollout:
+    revisionHistoryLimit: 5
+    maxUnavailable: 0
+    maxSurge: 1
+  probes:
+    enabled: true
+    startup:
+      httpGet: { path: /actuator/health, port: 8090 }
+      periodSeconds: 10
+      failureThreshold: 30
+    readiness:
+      httpGet: { path: /actuator/health, port: 8090 }
+      periodSeconds: 10
+      failureThreshold: 3
+      timeoutSeconds: 3
+    liveness:
+      httpGet: { path: /actuator/health, port: 8090 }
+      periodSeconds: 20
+      failureThreshold: 3
+      timeoutSeconds: 3
   resources:
     requests:
       cpu: "100m"

@@ -5,6 +5,15 @@ metadata:
   labels:
     app: identity-service
 spec:
+  # 롤백 이력 보존(ArgoCD가 아닌 kubectl rollout 관점) + 배포 시 무중단 지향.
+  # maxUnavailable:0 은 replica=1 에서도 유효하다 — 새 Pod가 Ready 된 뒤에야 구 Pod를 내린다
+  # (maxSurge:1 이 순간적으로 2개를 허용). replica>=2 HA 전환은 #91(values-ha.yaml) 참고.
+  revisionHistoryLimit: {{ .Values.identityService.rollout.revisionHistoryLimit }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.identityService.rollout.maxUnavailable }}
+      maxSurge: {{ .Values.identityService.rollout.maxSurge }}
   {{- if not .Values.identityService.hpa.enabled }}
   replicas: {{ .Values.identityService.replicaCount }}
   {{- end }}
@@ -31,6 +40,17 @@ spec:
           ports:
             - containerPort: {{ .Values.identityService.port }}
               protocol: TCP
+          # startup: 콜드스타트(Spring + Flyway) 동안 readiness/liveness 판정을 유예한다.
+          # readiness 실패 → Service endpoint에서만 제외(롤아웃이 여기서 멈춰 나쁜 이미지가
+          # 트래픽을 못 받는다). liveness 실패 → 컨테이너 재시작.
+          {{- if .Values.identityService.probes.enabled }}
+          startupProbe:
+            {{- toYaml .Values.identityService.probes.startup | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.identityService.probes.readiness | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.identityService.probes.liveness | nindent 12 }}
+          {{- end }}
           {{- if .Values.identityService.resources }}
           resources:
             {{- toYaml .Values.identityService.resources | nindent 12 }}
