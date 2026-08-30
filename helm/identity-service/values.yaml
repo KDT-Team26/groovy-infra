@@ -36,14 +36,19 @@ identityService:
     enabled: false
     minAvailable: 1
   topologySpreadConstraints: []
+  # CPU 용량 확충(#119) — 부하테스트 실측으로 500m limit에 pinned되어 30rps/30s 목표가 123s
+  # 걸리고 p50 6.7~8s까지 튀는 걸 확인. 클러스터 실사용률(request 기준 45%)에 여유 있어 상향.
   resources:
     requests:
-      cpu: "200m"
+      cpu: "300m"
       memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "1000m"
       memory: "1Gi"
-  javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
+  # TieredStopAtLevel=1(#119): C2 JIT 컴파일 생략 — 콜드스타트 시 CPU 스파이크 감소 목적.
+  # steady-state CPU가 4~12%대라 처리량 트레이드오프 영향은 적음. ActiveProcessorCount는
+  # 500m limit 기준 기본값이 이미 1이라(올림 처리) 추가해도 no-op이라 제외.
+  javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k -XX:TieredStopAtLevel=1"
   hpa:
     enabled: true
     minReplicas: 1
