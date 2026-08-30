@@ -6,6 +6,13 @@ metadata:
     app: prometheus
 spec:
   replicas: {{ .Values.prometheus.replicaCount }}
+  # PVC가 RWO/hostpath라 동시에 1개 pod만 TSDB 락을 잡을 수 있다. 기본 RollingUpdate(surge)는
+  # 신규 pod가 구 pod와 동시에 같은 데이터 디렉토리를 열려다 "lock DB directory: resource
+  # temporarily unavailable"로 크래시루프 → 구 pod는 신규가 Ready 안 되니 안 내려가는 롤아웃
+  # 데드락에 빠진다. Recreate로 구 pod를 먼저 완전히 내린 뒤 신규를 띄운다(그동안 짧은 다운타임
+  # 발생 — Prometheus는 replica=1 싱글턴이라 감수).
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: prometheus
