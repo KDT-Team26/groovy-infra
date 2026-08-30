@@ -5,7 +5,8 @@ metadata:
   labels:
     app: calendar-service-db-init
   annotations:
-    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "1"
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   backoffLimit: 3
@@ -24,7 +25,7 @@ spec:
             - -c
             - |
               i=0
-              until mysqladmin ping -h mysql -u provisioner -p"$MYSQL_PWD" --silent; do
+              until mysqladmin ping -h calendar-mysql -u provisioner -p"$MYSQL_PWD" --silent; do
                 i=$((i+1))
                 if [ "$i" -ge 60 ]; then
                   echo "provisioner 계정에 60회 시도 후에도 접속 실패" >&2
@@ -36,7 +37,7 @@ spec:
             - name: MYSQL_PWD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
+                  name: calendar-mysql-secret
                   key: MYSQL_PROVISIONER_PASSWORD
       containers:
         - name: db-init
@@ -45,12 +46,12 @@ spec:
           command:
             - sh
             - -c
-            - mysql -h mysql -u provisioner < /sql/init.sql
+            - mysql -h calendar-mysql -u provisioner < /sql/init.sql
           env:
             - name: MYSQL_PWD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
+                  name: calendar-mysql-secret
                   key: MYSQL_PROVISIONER_PASSWORD
           volumeMounts:
             - name: init-sql

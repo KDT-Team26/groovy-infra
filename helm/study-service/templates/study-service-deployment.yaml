@@ -5,6 +5,13 @@ metadata:
   labels:
     app: study-service
 spec:
+  # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+  revisionHistoryLimit: {{ .Values.studyService.rollout.revisionHistoryLimit }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.studyService.rollout.maxUnavailable }}
+      maxSurge: {{ .Values.studyService.rollout.maxSurge }}
   {{- if not .Values.studyService.hpa.enabled }}
   replicas: {{ .Values.studyService.replicaCount }}
   {{- end }}
@@ -36,7 +43,21 @@ spec:
           ports:
             - containerPort: {{ .Values.studyService.port }}
               protocol: TCP
+          # health probe(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+          {{- if .Values.studyService.probes.enabled }}
+          startupProbe:
+            {{- toYaml .Values.studyService.probes.startup | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.studyService.probes.readiness | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.studyService.probes.liveness | nindent 12 }}
+          {{- end }}
           {{- if .Values.studyService.resources }}
           resources:
             {{- toYaml .Values.studyService.resources | nindent 12 }}
           {{- end }}
+      # HA 프로파일(#91) — 비어 있으면 렌더 안 됨. 활성화 방법은 values-ha.yaml 참고.
+      {{- with .Values.studyService.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

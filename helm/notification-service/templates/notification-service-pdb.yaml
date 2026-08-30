@@ -1,0 +1,14 @@
+{{- if .Values.notificationService.pdb.enabled }}
+# PodDisruptionBudget(#91) — 상세 설명은 identity-service-pdb.yaml 참고. replica>=2 에서만 켠다.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: notification-service
+  labels:
+    app: notification-service
+spec:
+  minAvailable: {{ .Values.notificationService.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: notification-service
+{{- end }}

@@ -1,15 +1,19 @@
+{{- range $name, $instance := .Values.mysqldExporter.instances }}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysqld-exporter
+  name: {{ $name }}-mysqld-exporter
   labels:
-    app: mysqld-exporter
+    app: {{ $name }}-mysqld-exporter
+    groovy.io/service: {{ $name }}
 spec:
   type: ClusterIP
   selector:
-    app: mysqld-exporter
+    app: {{ $name }}-mysqld-exporter
   ports:
     - name: metrics
-      port: {{ .Values.mysqldExporter.port }}
+      port: {{ $.Values.mysqldExporter.port }}
       targetPort: metrics
       protocol: TCP
+{{- end }}

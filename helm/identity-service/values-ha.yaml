@@ -1,0 +1,21 @@
+# HA 프로파일 (#91) — replica>=2 전제의 오버레이. 평소에는 쓰지 않는다.
+#
+# 활성화(미니 PC 자원 확보 또는 EKS 이관 후):
+#   argocd/apps/identity-service.yaml 의 spec.source.helm.valueFiles 를
+#     valueFiles:
+#       - values.yaml
+#       - values-ha.yaml      # <- 이 줄 추가 (뒤 파일이 앞 파일을 덮어씀)
+#
+# 로컬 확인: helm template identity-service ./helm/identity-service -f helm/identity-service/values.yaml -f helm/identity-service/values-ha.yaml
+identityService:
+  replicaCount: 2
+  pdb:
+    enabled: true
+    minAvailable: 1
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway   # 단일 노드에서도 스케줄을 막지 않는 소프트 제약
+      labelSelector:
+        matchLabels:
+          app: identity-service

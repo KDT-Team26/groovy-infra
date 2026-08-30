@@ -1,0 +1,14 @@
+{{- if .Values.calendarService.pdb.enabled }}
+# PodDisruptionBudget(#91) — 상세 설명은 identity-service-pdb.yaml 참고. replica>=2 에서만 켠다.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: calendar-service
+  labels:
+    app: calendar-service
+spec:
+  minAvailable: {{ .Values.calendarService.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: calendar-service
+{{- end }}
