@@ -39,26 +39,61 @@ mysql:
   instances:
     identity:
       replicaCount: 1
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
       persistence:
         size: 100Mi
 
     study:
       replicaCount: 1
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
       persistence:
         size: 100Mi
 
     content:
       replicaCount: 1
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
       persistence:
         size: 100Mi
 
     calendar:
       replicaCount: 1
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
       persistence:
         size: 100Mi
 
     notification:
       replicaCount: 1
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
       persistence:
         size: 100Mi
 

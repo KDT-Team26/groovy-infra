@@ -31,6 +31,8 @@ spec:
           ports:
             - containerPort: {{ $.Values.mysql.port }}
               protocol: TCP
+          resources:
+            {{- toYaml $instance.resources | nindent 12 }}
           livenessProbe:
             exec:
               command:
