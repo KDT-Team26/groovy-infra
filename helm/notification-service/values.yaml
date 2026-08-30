@@ -2,7 +2,7 @@ notificationService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
     repository: ttt103/groovy-notification-service
-    tag: "de8b7258afbeb505cd820ca0732cd33eb4d40c0e"
+    tag: "fbc55046941deb30b2c0be141172a27618d30dd7"
     pullPolicy: IfNotPresent
   port: 8085
   # 롤아웃 안전장치 + health probe(#90) — 상세 설명은 identity-service/values.yaml 참고.
