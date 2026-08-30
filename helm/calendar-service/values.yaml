@@ -2,7 +2,7 @@ calendarService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-calendar-service
-    tag: "7565a9aa75094cec485bdccec7282a64cabf591b"
+    tag: "275c6f55ee2f1a427535940fdf2f117d751479f5"
   port: 8084
   resources:
     requests:
@@ -11,10 +11,11 @@ calendarService:
     limits:
       cpu: "500m"
       memory: "1Gi"
+  javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
   hpa:
-    enabled: true
+    enabled: false # TEMP: JVM 메모리 옵션 전/후 비교 테스트 위해 replica=1 고정 (테스트 끝나면 true로 복구)
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 2
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
@@ -46,4 +47,4 @@ config:
 
 sealedSecretData:
   calendarService:
-    dbPassword: AgAZn0Pc5I47Tarf6Lc3WL8cjb9bbDURwVaLZQ/pAhPvXBmI+CXtdcA8+6gfoOtlB7pKsSzadZQcB8xZzjQdDcU6KUQOEnC48bI6RR0LBCbmnNp/tnX6fvBmY1n6M3uj+BpWUlESvOPQHMZenWyQdMbSiLbIJmR+56RMV+svd59f7r5Eg+zgraiXGrf7rkyDRwEjsw+mAmHlhxKiHIA/CtMWETx/oUD0ESO/WorjA0DbEfIFHOGArcWRNcLJCzm6XWFiQO/3Q8rQkvCBopHh+E7u0a3gKgGaEieVYS+7GlplotTMB0/e1kJ+MikAajlewkd2zB2X03akcJampgiXdXOzjBdNWCThQKLeiD2nEZT2jah+WULtNGJgBTuvllQ0M5GaFbTWIw5T2+7gw5ido5iedLBldusY6eZtWTllBBtfclKPN9InOqUEbqVRPlFedVea0lAbHnC77DUfF+NUhUPeqDuNeOOTq1n+h+hGFDmlqN6A5UPB5umfvQ/h4apra2pcwtppiXPWgd7kvuGkpDmCBm1g0A/uugFF1T/ssncQfGaEY+uur+M4LSLaM7xgWcK//f9bWaXk7FYzZ7msVczaXr/DL4kJ5LtMYFEorq23F2lBTjEg3Fc9Zi2PuvSwKV0kfz6eaRMoiMdV50z2VBgkvlm0dxhZdq7cp0x4TyPj0KdP3VopjzNjU41NHKvidk47E86zAYKP8cKG
+    dbPassword: AgBtITWmRlbmDp7olzIiaQTBNq6pxuYYYyM3nhB40WZXQbdbVoJ9RQBHanPeznSlvK65lEGcARYzsu+cYoZs8w1ADAUOjLHLPguk07sMYpDg5Al6PHzoyilfucLW/EchMKrPhcCtZcQedWgKPdMrz1SL9Q7oJj7MFUESZJQt4qdOEVVomV8PNgG823lBBl/XJ9NYYrzPgsaC9KH4G5rJTVYLxg9A65MMWYjy9LqyVIB4mfYqTcaIUqcazKs5/Sca9kdnOe+1v4wMUYyEZOIsLd/qGVl98qkUWbwT036BfQaV/BKSdRlhHLzGxEo7/QoFkF5LJmp7fJW4Q9Ip0TqOk6dttH+wRJNKPPjrPj8ifKakLaf8s7bI8f4f/pYf+53vkxQZHL0BZ8kRqNE51j/30Z3RdaqkJlgjxHkQv8DqSqd4eB1Z+gtvp9l62fi2Ng4MVtJ/OMrMa8AaxgOAdv/iyZ1BPYYtSBzK05OXMEv0xgkdHUal+leF8rvXBNoR6MhV0/VgKyW7PGrn8OFXRyR13YZc/rCiGyUmqos8RH7n+v054OutZ7GgoxbRETsI5uHhjPTL3+Nhvl2KugKrhz5AClYnuvYG1/x2oJahM5Q712zNaXBuyZpw0Ar/ZcS6mTjmwokKKBb/ufWktR6YTHS1/T9Xu3g4G9WMs5YQHqOQGWh9BMoOKFvUNnWKihR43ZuPkPdPcIUtHPhoTVDr

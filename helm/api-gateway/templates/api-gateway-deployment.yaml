@@ -23,6 +23,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: api-gateway-config
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ .Values.apiGateway.javaOpts | quote }}
           ports:
             - containerPort: {{ .Values.apiGateway.port }}
               protocol: TCP

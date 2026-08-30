@@ -27,14 +27,11 @@ spec:
             - name: alertmanager-config
               mountPath: /etc/alertmanager/alertmanager.yml
               subPath: alertmanager.yml
-            - name: slack-webhook
-              mountPath: /etc/alertmanager/secrets
-              readOnly: true
 
+      # alertmanager.yml 자체가 Discord Webhook URL을 담은 SealedSecret이라(#65 — discord_configs가
+      # slack_configs의 api_url_file 같은 파일 참조를 지원하지 않아 URL을 리터럴로 넣어야 함),
+      # 예전처럼 ConfigMap+별도 Secret 두 볼륨으로 나눌 필요 없이 이 Secret 하나만 마운트한다.
       volumes:
         - name: alertmanager-config
-          configMap:
-            name: groovy-alertmanager-config
-        - name: slack-webhook
           secret:
             secretName: alertmanager-secret

@@ -14,7 +14,7 @@ spec:
     repoURL: https://kubernetes-sigs.github.io/metrics-server/
     chart: metrics-server
     # 적용 전에 `helm search repo metrics-server/metrics-server --versions`로 최신 안정 버전 확인해서 채우기
-    targetRevision: "3.12.2"
+    targetRevision: "3.14.0"
     helm:
       values: |
         args:

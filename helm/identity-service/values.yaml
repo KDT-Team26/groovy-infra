@@ -2,7 +2,7 @@ identityService:
   replicaCount: 1
   image:
     repository: ttt103/groovy-identity-service
-    tag: "11ad5bd2e73652f656c62b48ccfe2c7ca6322fb8"
+    tag: "2d78f0917d5ef0d3a8e05c45086f5844955d168f"
   port: 8081
   resources:
     requests:
@@ -11,10 +11,11 @@ identityService:
     limits:
       cpu: "500m"
       memory: "1Gi"
+  javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
   hpa:
-    enabled: true
+    enabled: false # TEMP: JVM 메모리 옵션 전/후 비교 테스트 위해 replica=1 고정 (테스트 끝나면 true로 복구)
     minReplicas: 1
-    maxReplicas: 5
+    maxReplicas: 2
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
@@ -33,4 +34,4 @@ config:
 
 sealedSecretData:
   identityService:
-    dbPassword: AgBBVTjCOr81v/5hfe39WZnr7qRFYrQTbUEPNZQp6fGP2fOTOm0j+F8T0/tV5bB/AhezPq37ehY/xRMZJXEYAES5ua5wzY/iy1LslfkdP1zv2P/cSEH1fdUlVwgHVdcLr/84eNreymW2X+FKY03GQsi2zKupTpGGY/L5Z0ojOB8BlQ1uY6FicvpBL9rfFCJQWq8k2TqnZrtIieHB1GIh0y+1TGZDQzLsUfyhlMilQPLNc9fD5vIxjB7UcD8QFqFEpE+gitHbomZibXzUZdK0plnPnfw7eeAiaK/ZYjcZ2HnNoVCMNxWGv8vX3K3NUn+jjcHCOJ+Lm4XiL0eaVpZlrHZoqU9H0Yg+VLAuaZzBCzdQBN8dDYBedZ4uh7itYhh81hh9ZvMaRXfed3Pj4dXsRT5Q8UCbKfoNNvoBFzLsi3UtZYZuJUVFWbPTFNhqDMVHgsG/aizrrJUYopLEhWfM33KPKqY33cl3TDzwQx+JtI5OE+89zqzYf3mU93c0uhcbaQztkPhmbkaeGtfde9wtDBLgkpKWjzFFrb3EebXZqQ4cFgumWLVfJxIcGfdO00QKCBfwM7BP2OYvCrE5PUkLo1ndz3cyNTRLxMy0wjPNoaNuEalO5c2EUUdFbDzyqxckbCALcvxwzdBiBNIK2NI6xA8ydLHsLQmBaaj++TkYbJDJShmINOJf2nqy4GzHkJvhtlgXWqSU2mtmHZrv
+    dbPassword: AgBvovaKaa50Yyg4YeSv8H7nk0PRaBBcPUss0B3KSYwSf/IYWbDcBAUzxKKC2dZgADlW9o7sPlcdqsXaJO1ee4gyxc9N8Wf+YL/+mL0sWIYi0t6gLkr3Vj507BnuQiK2w0p8cU3DE7xoAnCR55vsmTHVfthY2MIdDYNYT5kvtZtQeQ73uxv6SpjdMpFVr8tUQAG9FOfmyQZ9eMYda2ylvj58EONpzatsaLdeOo53JlL8t7y3hlwFcUF/VR78iILS3ac6FSiyu5KAnIsV/FQ4I5xSwENuCXujU07DfCEBwWyIBtH/+sZqc8L/zVAeK7hwDTIdYX8a5gMqt9Z+FOnqyJtC20OLYg9KKfZ/rytMdFivhUjQgt6LMtDJatidCI8J1vu0mLPYh6rDSdU8CQolCISRKaCFlTN53Nth9KiB+tDxOCFOhVoawWQpCLvK2nL32X78xUCvlhmN5Aw8WHZmSCIgrO1HbAVA09zJP4YGkgxaV9pDQddbKbWEb5BFIyH0wOlPH+o/Rvdd+J7TAOnyMDlHHhg7AjSTXLU8ZIj4XOHAlOEVXYug+ZNbcHjvNYtNNGSdNkKrBxC0yJ7nKyTbkxyXRXDOktIU3KNRdM5sxAlT7a5PIxFHmk3P6k6SEaJyjDQGRaruFLSbYqog0GvNtvzyAzrkxC8Fxc0bsIgPW+P6UJ6yheEQR+BqvQMf7NGaVdmnyl8ZFX1c39V7

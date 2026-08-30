@@ -65,6 +65,20 @@ kubectl wait --for=condition=Ready pods -l name=sealed-secrets-controller -n kub
 echo "  → 이 클러스터의 공개키로 비밀번호를 암호화하려면: argocd/bootstrap/seal-secret-values.sh"
 
 echo
+echo "[5.5/7] ArgoCD Notifications(Discord) 설정 적용 (#61)"
+# notifications-controller는 core install.yaml(STEP 2)에 이미 포함되어 있어 별도 설치가
+# 필요 없다 — ConfigMap/Secret만 적용하면 된다. SealedSecret이라 방금 STEP 5에서 띄운
+# sealed-secrets 컨트롤러가 반드시 먼저 떠 있어야 복호화된다.
+# argocd-notifications-secret.yaml의 discord-webhook-url을 아직 seal-secret-values.sh로
+# 채우지 않았다면 이 스텝도 정상적으로 실패로 보인다 — 값 채운 뒤 재적용하면 된다(root-app과
+# 마찬가지로 이 두 리소스도 GitOps 관리 대상이 아니라 여기서 kubectl apply로 직접 적용한다).
+# ConfigMap/Secret 변경은 notifications-controller가 자동 감시하므로 재시작 불필요 — 반영이
+# 안 되는 것처럼 보일 때만 확인용으로 재시작한다:
+#   kubectl rollout restart deployment argocd-notifications-controller -n argocd
+kubectl apply -n argocd -f "${BOOTSTRAP_DIR}/argocd-notifications-cm.yaml"
+kubectl apply -n argocd -f "${BOOTSTRAP_DIR}/argocd-notifications-secret.yaml"
+
+echo
 echo "[6/7] App of Apps(root-app.yaml) 등록 — 이후로는 이 Application이 argocd/apps/를 계속 감시함"
 kubectl apply -n argocd -f "${BOOTSTRAP_DIR}/../root-app.yaml"
 
