@@ -1,12 +1,16 @@
+{{- range $name, $instance := .Values.mysql.instances }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: groovy-mysql-data
+  name: {{ $name }}-mysql-data
   labels:
-    app: mysql
+    app: {{ $name }}-mysql
+    groovy.io/service: {{ $name }}
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.mysql.persistence.size }}
+      storage: {{ $instance.persistence.size }}
+{{- end }}

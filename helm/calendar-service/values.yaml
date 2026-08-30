@@ -19,7 +19,7 @@ calendarService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: mysql
+    host: calendar-mysql
     port: 3306
     name: calendar_db
     username: calendar_service

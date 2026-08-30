@@ -19,7 +19,7 @@ studyService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: mysql
+    host: study-mysql
     port: 3306
     name: study_db
     username: study_service
