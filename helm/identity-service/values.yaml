@@ -2,7 +2,7 @@ identityService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
     repository: ttt103/groovy-identity-service
-    tag: "4c17d62558d23ab7d037f42329bd3f667c5359f7"
+    tag: "289a0a9d5d9b22eee9b87cb58fc835e4a5d5e4fd"
     # 태그가 sha 고정이라 K8s 기본값은 IfNotPresent지만, 6개 서비스 간 일관성을 위해 명시.
     pullPolicy: IfNotPresent
   port: 8081
@@ -36,14 +36,19 @@ identityService:
     enabled: false
     minAvailable: 1
   topologySpreadConstraints: []
+  # CPU 용량 확충(#119) — 부하테스트 실측으로 500m limit에 pinned되어 30rps/30s 목표가 123s
+  # 걸리고 p50 6.7~8s까지 튀는 걸 확인. 클러스터 실사용률(request 기준 45%)에 여유 있어 상향.
   resources:
     requests:
-      cpu: "200m"
+      cpu: "300m"
       memory: "512Mi"
     limits:
-      cpu: "500m"
+      cpu: "1000m"
       memory: "1Gi"
-  javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
+  # TieredStopAtLevel=1(#119): C2 JIT 컴파일 생략 — 콜드스타트 시 CPU 스파이크 감소 목적.
+  # steady-state CPU가 4~12%대라 처리량 트레이드오프 영향은 적음. ActiveProcessorCount는
+  # 500m limit 기준 기본값이 이미 1이라(올림 처리) 추가해도 no-op이라 제외.
+  javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k -XX:TieredStopAtLevel=1"
   hpa:
     enabled: true
     minReplicas: 1
