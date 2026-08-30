@@ -26,3 +26,37 @@ groups:
       annotations:
         summary: "Backend CPU Spike Over 95%!"
         description: "{{ $labels.job }}의 프로세스 CPU 사용률이 95%를 초과했습니다({{ $value | humanizePercentage }})."
+
+  # 배포 실패 감지(#94) — probe(#90)/ArgoCD Health 가 놓치는 케이스까지 커버해
+  # 반자동 롤백(rollback.yml, #93) 을 언제 돌릴지 판단하는 2차 신호. Alertmanager→Discord 로 전달.
+  - name: groovy-deploy-rollback-alerts
+    rules:
+    # 새 이미지가 Pod 를 못 띄우는 경우 — probe 실패로 컨테이너가 반복 재시작.
+    - alert: BackendPodCrashLooping
+      expr: increase(kube_pod_container_status_restarts_total{namespace="groovy-kubernates"}[10m]) > 3
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod CrashLoop 감지 — 롤백 검토"
+        description: "{{ $labels.namespace }}/{{ $labels.pod }} 가 10분간 {{ $value }}회 재시작했습니다. 최근 배포가 원인일 수 있습니다 → rollback.yml(#93) 검토."
+    # 서비스가 응답 불가(scrape target down) — readiness 실패로 endpoint 에서 빠졌거나 전멸.
+    - alert: BackendTargetDown
+      expr: up{job=~"api-gateway|identity-service|study-service|calendar-service|content-service|notification-service"} == 0
+      for: 3m
+      labels:
+        severity: critical
+      annotations:
+        summary: "백엔드 스크레이프 타겟 down — 롤백 검토"
+        description: "{{ $labels.job }} 가 3분간 응답하지 않습니다(up=0). 최근 배포가 원인일 수 있습니다 → rollback.yml(#93) 검토."
+    # probe 는 통과하지만 5xx 가 쏟아지는 경우 — "Ready 인데 고장". 무트래픽이면 0/0=NaN 이라 안 울림.
+    - alert: BackendHigh5xxRate
+      expr: |
+        sum by (job) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+          / sum by (job) (rate(http_server_requests_seconds_count[5m])) > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "5xx 비율 10% 초과 — 롤백 검토"
+        description: "{{ $labels.job }} 의 5xx 응답 비율이 {{ $value | humanizePercentage }} 입니다. 최근 배포가 원인일 수 있습니다 → rollback.yml(#93) 검토."
