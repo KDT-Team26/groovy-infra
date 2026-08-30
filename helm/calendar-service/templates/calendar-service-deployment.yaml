@@ -5,6 +5,13 @@ metadata:
   labels:
     app: calendar-service
 spec:
+  # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+  revisionHistoryLimit: {{ .Values.calendarService.rollout.revisionHistoryLimit }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.calendarService.rollout.maxUnavailable }}
+      maxSurge: {{ .Values.calendarService.rollout.maxSurge }}
   {{- if not .Values.calendarService.hpa.enabled }}
   replicas: {{ .Values.calendarService.replicaCount }}
   {{- end }}
@@ -36,7 +43,21 @@ spec:
           ports:
             - containerPort: {{ .Values.calendarService.port }}
               protocol: TCP
+          # health probe(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
+          {{- if .Values.calendarService.probes.enabled }}
+          startupProbe:
+            {{- toYaml .Values.calendarService.probes.startup | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.calendarService.probes.readiness | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.calendarService.probes.liveness | nindent 12 }}
+          {{- end }}
           {{- if .Values.calendarService.resources }}
           resources:
             {{- toYaml .Values.calendarService.resources | nindent 12 }}
           {{- end }}
+      # HA 프로파일(#91) — 비어 있으면 렌더 안 됨. 활성화 방법은 values-ha.yaml 참고.
+      {{- with .Values.calendarService.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

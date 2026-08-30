@@ -23,13 +23,17 @@ data:
             "content": "✅ **{{.app.metadata.name}}** sync 성공\n- Revision: `{{.app.status.sync.revision}}`\n- Sync Status: `{{.app.status.sync.status}}`\n- Health: `{{.app.status.health.status}}`"
           }
 
+  # 반자동 롤백(#92): sync 실패/health Degraded 알림에 "직전 배포 revision"과 "롤백 실행 방법"을
+  # 실어, 사람이 Discord 알림만 보고 바로 롤백 워크플로(#93)를 돌릴 수 있게 한다.
+  # 직전 revision 은 .app.status.history 의 뒤에서 2번째 항목(마지막은 현재 배포) — history 가
+  # 1건 이하면 "조회 불가"로 표기(한 줄 인라인 조건식이라 JSON 개행이 깨지지 않는다).
   template.app-sync-failed: |
     webhook:
       discord:
         method: POST
         body: |
           {
-            "content": "❌ **{{.app.metadata.name}}** sync 실패\n- Sync Status: `{{.app.status.sync.status}}`\n- Message: {{.app.status.operationState.message | toJson}}"
+            "content": "❌ **{{.app.metadata.name}}** sync 실패\n- Sync Status: `{{.app.status.sync.status}}`\n- 현재 revision: `{{.app.status.sync.revision}}`\n- 직전 배포 revision: `{{- if gt (len .app.status.history) 1 }}{{ (index .app.status.history (sub (len .app.status.history) 2)).revision }}{{- else }}조회 불가{{- end }}`\n- Message: {{.app.status.operationState.message | toJson}}\n\n**롤백**: groovy-infra → Actions → `Rollback service image tag` 실행 (service=`{{.app.metadata.name}}`, to_sha 는 위 '직전 배포 revision' 또는 비워두면 자동)"
           }
 
   template.app-health-degraded: |
@@ -38,19 +42,22 @@ data:
         method: POST
         body: |
           {
-            "content": "⚠️ **{{.app.metadata.name}}** health Degraded\n- Health Status: `{{.app.status.health.status}}`\n- Sync Status: `{{.app.status.sync.status}}`"
+            "content": "⚠️ **{{.app.metadata.name}}** health Degraded\n- Health Status: `{{.app.status.health.status}}`\n- Sync Status: `{{.app.status.sync.status}}`\n- 현재 revision: `{{.app.status.sync.revision}}`\n- 직전 배포 revision: `{{- if gt (len .app.status.history) 1 }}{{ (index .app.status.history (sub (len .app.status.history) 2)).revision }}{{- else }}조회 불가{{- end }}`\n\n**롤백**: groovy-infra → Actions → `Rollback service image tag` 실행 (service=`{{.app.metadata.name}}`, to_sha 는 위 '직전 배포 revision' 또는 비워두면 자동)"
           }
 
   trigger.on-sync-succeeded: |
     - when: app.status.operationState.phase in ['Succeeded']
       send: [app-sync-succeeded]
 
+  # oncePer: 같은 revision 에서 실패/Degraded 가 반복돼도 알림은 revision 당 1회만 — 스팸 방지.
   trigger.on-sync-failed: |
     - when: app.status.operationState.phase in ['Error', 'Failed']
+      oncePer: app.status.sync.revision
       send: [app-sync-failed]
 
   trigger.on-health-degraded: |
     - when: app.status.health.status == 'Degraded'
+      oncePer: app.status.sync.revision
       send: [app-health-degraded]
 
   subscriptions: |

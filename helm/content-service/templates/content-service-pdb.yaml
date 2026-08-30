@@ -1,0 +1,14 @@
+{{- if .Values.contentService.pdb.enabled }}
+# PodDisruptionBudget(#91) — 상세 설명은 identity-service-pdb.yaml 참고. replica>=2 에서만 켠다.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: content-service
+  labels:
+    app: content-service
+spec:
+  minAvailable: {{ .Values.contentService.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app: content-service
+{{- end }}

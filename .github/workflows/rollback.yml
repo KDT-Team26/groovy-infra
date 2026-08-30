@@ -1,0 +1,164 @@
+# 반자동 롤백 워크플로 (#93)
+#
+# 어떤 merge/배포가 장애를 유발했을 때, 해당 서비스의 이미지 태그를 이전 값으로 되돌린다.
+# 감지는 자동(ArgoCD → Discord, #92)이지만 실행은 사람이 이 워크플로를 수동으로 트리거한다
+# (ArgoCD가 외부에서 도달 불가 = Ingress 없음이라 CI가 배포 상태를 못 물어보기 때문).
+#
+# 동작:
+#   1. groovy-infra main 체크아웃
+#   2. helm/<service>/values.yaml 의 image tag 를 목표값으로 치환
+#      - to_sha 입력이 있으면 그 값, 없으면 git 이력에서 "직전 태그"를 자동 추출
+#   3. revert 커밋 후 main 에 push
+#   4. ArgoCD(main 감시)가 다음 sync 때 이전 이미지로 재배포
+#
+# main 직접 push 는 break-glass 다 — 이 워크플로를 사람이 실행한 것 자체가 승인이다.
+# CI 봇(build-and-deploy.yml)도 이미 main 에 직접 push 한다. 미리보기만 원하면 dry_run=true.
+#
+# git revert 가 아니라 "태그만 치환" 인 이유: values.yaml 은 CI 태그 bump 와 수동 PR(JVM 옵션,
+# HPA 튜닝 등)이 섞여 있어 "마지막 커밋"이 항상 태그 변경이 아니다. 태그 값만 정밀 타겟한다.
+
+name: Rollback service image tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 롤백할 서비스(= helm/<service> 디렉토리명)
+        required: true
+        type: choice
+        options:
+          - api-gateway
+          - identity-service
+          - study-service
+          - calendar-service
+          - content-service
+          - notification-service
+          - frontend
+      to_sha:
+        description: 되돌릴 이미지 태그(git sha). 비우면 git 이력에서 직전 태그 자동 추출.
+        required: false
+        type: string
+      reason:
+        description: 롤백 사유(커밋 메시지에 기록됨)
+        required: true
+        type: string
+      dry_run:
+        description: true 면 push 없이 목표 태그와 diff 만 출력
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write            # 같은 레포라 GITHUB_TOKEN 으로 충분 — 별도 PAT 불필요
+
+concurrency:
+  group: rollback-${{ github.event.inputs.service }}
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout groovy-infra main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0       # 직전 태그 추출을 위해 전체 이력 필요
+
+      - name: Resolve target tag
+        id: resolve
+        run: |
+          set -euo pipefail
+          SVC='${{ inputs.service }}'
+          FILE="helm/${SVC}/values.yaml"
+          test -f "$FILE" || { echo "::error::${FILE} 이 없습니다"; exit 1; }
+
+          CURRENT=$(grep -E '^    tag: ' "$FILE" | head -1 | sed -E 's/^    tag: "?([^"]*)"?.*/\1/')
+          echo "현재 태그: $CURRENT"
+
+          TO='${{ inputs.to_sha }}'
+          if [ -n "$TO" ]; then
+            TARGET="$TO"
+            echo "목표 태그(수동 지정): $TARGET"
+          else
+            # git log -p 는 최신 커밋부터 보여준다. values.yaml 을 바꾼 가장 최근 커밋의 diff에서
+            # 제거된(-) tag 라인 = 현재 태그 바로 이전 값. 그게 롤백 목표다.
+            TARGET=$(git log -p --follow -- "$FILE" \
+                     | grep -E '^-    tag: ' \
+                     | head -1 \
+                     | sed -E 's/^-    tag: "?([^"]*)"?.*/\1/' || true)
+            if [ -z "$TARGET" ]; then
+              echo "::error::git 이력에서 직전 태그를 찾지 못했습니다. to_sha 를 직접 지정하세요."
+              exit 1
+            fi
+            echo "목표 태그(자동 추출): $TARGET"
+          fi
+
+          if [ "$CURRENT" = "$TARGET" ]; then
+            echo "::error::현재 태그와 목표 태그가 같습니다($CURRENT). 롤백할 것이 없습니다."
+            exit 1
+          fi
+
+          {
+            echo "file=$FILE"
+            echo "current=$CURRENT"
+            echo "target=$TARGET"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Rewrite image tag
+        run: |
+          set -euo pipefail
+          FILE='${{ steps.resolve.outputs.file }}'
+          TARGET='${{ steps.resolve.outputs.target }}'
+          sed -i -E "s|^(    tag: ).*|\1\"${TARGET}\"|" "$FILE"
+          echo "----- diff -----"
+          git --no-pager diff -- "$FILE"
+          git diff --quiet -- "$FILE" && { echo "::error::변경 사항이 없습니다"; exit 1; } || true
+
+      - name: Validate chart still renders
+        run: |
+          set -euo pipefail
+          SVC='${{ inputs.service }}'
+          if command -v helm >/dev/null 2>&1; then
+            helm template "$SVC" "./helm/${SVC}" >/dev/null
+          else
+            curl -sSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash >/dev/null
+            helm template "$SVC" "./helm/${SVC}" >/dev/null
+          fi
+          echo "helm template OK"
+
+      - name: Commit & push to main
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          set -euo pipefail
+          FILE='${{ steps.resolve.outputs.file }}'
+          CURRENT='${{ steps.resolve.outputs.current }}'
+          TARGET='${{ steps.resolve.outputs.target }}'
+          git config user.name  "rollback-bot"
+          git config user.email "rollback-bot@users.noreply.github.com"
+          git add "$FILE"
+          git commit -m "revert(${{ inputs.service }}): roll back image tag to ${TARGET}" \
+                     -m "from: ${CURRENT}" \
+                     -m "reason: ${{ inputs.reason }}" \
+                     -m "triggered by @${{ github.actor }} via rollback.yml (#93)"
+          git push origin HEAD:main
+
+      - name: Summary
+        run: |
+          {
+            echo "### 롤백 ${{ inputs.dry_run == true && '(dry-run)' || '완료' }}"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| service | \`${{ inputs.service }}\` |"
+            echo "| from | \`${{ steps.resolve.outputs.current }}\` |"
+            echo "| to | \`${{ steps.resolve.outputs.target }}\` |"
+            echo "| reason | ${{ inputs.reason }} |"
+            echo ""
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              echo "> dry-run 이라 push 하지 않았습니다. 실제 롤백은 dry_run 을 끄고 다시 실행하세요."
+            else
+              echo "> main 에 push 됨. ArgoCD 가 다음 sync(기본 폴링 3분) 때 이전 이미지로 재배포합니다."
+              echo "> ArgoCD UI 에서 \`${{ inputs.service }}\` Application 이 Synced & Healthy 로 돌아오는지 확인하세요."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
