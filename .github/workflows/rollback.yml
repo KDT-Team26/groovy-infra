@@ -1,21 +1,10 @@
-# 반자동 롤백 워크플로 (#93)
+# 반자동 롤백 워크플로
 #
-# 어떤 merge/배포가 장애를 유발했을 때, 해당 서비스의 이미지 태그를 이전 값으로 되돌린다.
-# 감지는 자동(ArgoCD → Discord, #92)이지만 실행은 사람이 이 워크플로를 수동으로 트리거한다
-# (ArgoCD가 외부에서 도달 불가 = Ingress 없음이라 CI가 배포 상태를 못 물어보기 때문).
-#
-# 동작:
-#   1. groovy-infra main 체크아웃
-#   2. helm/<service>/values.yaml 의 image tag 를 목표값으로 치환
-#      - to_sha 입력이 있으면 그 값, 없으면 git 이력에서 "직전 태그"를 자동 추출
-#   3. revert 커밋 후 main 에 push
-#   4. ArgoCD(main 감시)가 다음 sync 때 이전 이미지로 재배포
-#
+# 새로운 배포 본이 장애를 유발했을 때, 해당 서비스의 이미지 태그를 이전 태그로 변경시킴.
+# 감지는 자동 -> Discord
+# 워크플로를 수동으로 트리거한다
 # main 직접 push 는 break-glass 다 — 이 워크플로를 사람이 실행한 것 자체가 승인이다.
-# CI 봇(build-and-deploy.yml)도 이미 main 에 직접 push 한다. 미리보기만 원하면 dry_run=true.
-#
-# git revert 가 아니라 "태그만 치환" 인 이유: values.yaml 은 CI 태그 bump 와 수동 PR(JVM 옵션,
-# HPA 튜닝 등)이 섞여 있어 "마지막 커밋"이 항상 태그 변경이 아니다. 태그 값만 정밀 타겟한다.
+
 
 name: Rollback service image tag
 
@@ -49,7 +38,7 @@ on:
         default: false
 
 permissions:
-  contents: write            # 같은 레포라 GITHUB_TOKEN 으로 충분 — 별도 PAT 불필요
+  contents: write
 
 concurrency:
   group: rollback-${{ github.event.inputs.service }}

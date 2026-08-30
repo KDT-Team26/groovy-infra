@@ -23,10 +23,8 @@ data:
             "content": "✅ **{{.app.metadata.name}}** sync 성공\n- Revision: `{{.app.status.sync.revision}}`\n- Sync Status: `{{.app.status.sync.status}}`\n- Health: `{{.app.status.health.status}}`"
           }
 
-  # 반자동 롤백(#92): sync 실패/health Degraded 알림에 "직전 배포 revision"과 "롤백 실행 방법"을
-  # 실어, 사람이 Discord 알림만 보고 바로 롤백 워크플로(#93)를 돌릴 수 있게 한다.
-  # 직전 revision 은 .app.status.history 의 뒤에서 2번째 항목(마지막은 현재 배포) — history 가
-  # 1건 이하면 "조회 불가"로 표기(한 줄 인라인 조건식이라 JSON 개행이 깨지지 않는다).
+  # 반자동 롤백: sync 실패/health Degraded
+  # 디스코드 알림에 "직전 배포 revision"과 "롤백 실행 방법"을 전송
   template.app-sync-failed: |
     webhook:
       discord:
