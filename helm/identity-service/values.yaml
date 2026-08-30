@@ -45,7 +45,7 @@ identityService:
       memory: "1Gi"
   javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Xss256k"
   hpa:
-    enabled: false # TEMP: JVM 메모리 옵션 전/후 비교 테스트 위해 replica=1 고정 (테스트 끝나면 true로 복구)
+    enabled: true
     minReplicas: 1
     maxReplicas: 2
     targetCPUUtilizationPercentage: 80
@@ -66,4 +66,4 @@ config:
 
 sealedSecretData:
   identityService:
-    dbPassword: AgBvovaKaa50Yyg4YeSv8H7nk0PRaBBcPUss0B3KSYwSf/IYWbDcBAUzxKKC2dZgADlW9o7sPlcdqsXaJO1ee4gyxc9N8Wf+YL/+mL0sWIYi0t6gLkr3Vj507BnuQiK2w0p8cU3DE7xoAnCR55vsmTHVfthY2MIdDYNYT5kvtZtQeQ73uxv6SpjdMpFVr8tUQAG9FOfmyQZ9eMYda2ylvj58EONpzatsaLdeOo53JlL8t7y3hlwFcUF/VR78iILS3ac6FSiyu5KAnIsV/FQ4I5xSwENuCXujU07DfCEBwWyIBtH/+sZqc8L/zVAeK7hwDTIdYX8a5gMqt9Z+FOnqyJtC20OLYg9KKfZ/rytMdFivhUjQgt6LMtDJatidCI8J1vu0mLPYh6rDSdU8CQolCISRKaCFlTN53Nth9KiB+tDxOCFOhVoawWQpCLvK2nL32X78xUCvlhmN5Aw8WHZmSCIgrO1HbAVA09zJP4YGkgxaV9pDQddbKbWEb5BFIyH0wOlPH+o/Rvdd+J7TAOnyMDlHHhg7AjSTXLU8ZIj4XOHAlOEVXYug+ZNbcHjvNYtNNGSdNkKrBxC0yJ7nKyTbkxyXRXDOktIU3KNRdM5sxAlT7a5PIxFHmk3P6k6SEaJyjDQGRaruFLSbYqog0GvNtvzyAzrkxC8Fxc0bsIgPW+P6UJ6yheEQR+BqvQMf7NGaVdmnyl8ZFX1c39V7
+    dbPassword: AgAuSDz6F9JExBWgjCchiXxXAh56dF+NOoea1o4u0RlZwiVOkrTHh4DgJOAUW8GSnh6lKX25p3CeUpk35PlllAZONJyumyG8Sz1JGzY35z2pU5vt8Z1CVZVlLJmb1FzL8k4nVvazIBFok9PJwS7s1OeoWdFu4n0sJERLEJfDmyiG6/EhKWHC75Qg+XClcFUktsnoJb7N5Agt/1J3gza8XitWpbL9Dtb7VLhteRdN4S9IRCpIFnN2xwT797B5FpfKGQz0xDAQwb3Tw8X5JPlWdRbH/DelcQ4GgMYabBj43vjyydGw0KtKqNku60WIA3Dgd7P39k5+QIiFMnhX/9JeSnfbtup8eJSylIwPS0fTSPxWCvZIE7bquxXNkPcmW08MOrrnAHuj1S4+xyVS1pjW2Pbf8+/DNwS9oOA6lcG9VBYwYvTaP22r0/hKprFSJynWnU0+S6vOVOHbnQTYidductCpcs24io7E3exkIWKqhNwliUkwFbPps5+2i3Bqks1lSrmp2jX7M1FIUQiVqGWvTT5WN6f6rBsiNZ5kgT+ujOnfO98qp6KAMsZz7FqFt2xBBeF0cY1lxTtZ78F9+wPb+VI1/wJIF/9yrvRskVZM/wxdf0HMl6pQ0L47rA5MMOJ5nu5JZmeNgjAnWZkXFYWfzOZ91iaWWK13ZU6M/a47UrQZYKgazC/ZUfHQqqByLiWcXeGCPlPXwvqmINjH
