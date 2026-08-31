@@ -45,7 +45,3 @@ frontend:
       memory: "128Mi"
   hpa:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 2
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80

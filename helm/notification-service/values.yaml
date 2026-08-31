@@ -41,10 +41,6 @@ notificationService:
   javaOpts: "-XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=224m -Xss256k"
   hpa:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 2
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
   database:
     host: notification-mysql
     port: 3306

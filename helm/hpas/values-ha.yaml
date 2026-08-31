@@ -1,0 +1,7 @@
+hpas:
+  api-gateway:
+    minReplicas: 2
+    maxReplicas: 4
+  frontend:
+    minReplicas: 2
+    maxReplicas: 4

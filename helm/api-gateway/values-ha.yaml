@@ -2,10 +2,6 @@
 # api-gateway 는 hpa.enabled=true 라 replicas 를 HPA 가 관리한다 → minReplicas 를 2 로 올려 HA 확보.
 # 활성화: argocd/apps/api-gateway.yaml 의 helm.valueFiles 에 - values-ha.yaml 추가.
 apiGateway:
-  replicaCount: 2   # hpa 를 끄게 될 경우 대비
-  hpa:
-    minReplicas: 2
-    maxReplicas: 4
   pdb:
     enabled: true
     minAvailable: 1
