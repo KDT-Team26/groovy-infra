@@ -1,48 +1,59 @@
 resource "aws_eks_cluster" "this" {
-  name     = "${var.project_name}-${var.environment}"
+  name     = "groovy-eks-cluster"
   role_arn = aws_iam_role.eks_cluster.arn
   version  = var.cluster_version
 
   vpc_config {
-    subnet_ids              = [for subnet in aws_subnet.private : subnet.id]
-    endpoint_private_access = true
+    subnet_ids = [
+      aws_subnet.private["a"].id,
+      aws_subnet.private["b"].id,
+    ]
+
     endpoint_public_access  = true
-    security_group_ids      = [aws_security_group.eks_cluster.id]
+    endpoint_private_access = true
+  }
+
+  enabled_cluster_log_types = [
+    "api",
+    "audit",
+    "authenticator",
+  ]
+
+  zonal_shift_config {
+    enabled = false
   }
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy
   ]
-
-  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-eks"
-  }
 }
 
 resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${var.project_name}-${var.environment}-nodes"
+  node_group_name = "groovy-eks-node-group"
   node_role_arn   = aws_iam_role.eks_nodes.arn
-  subnet_ids      = [for subnet in aws_subnet.private : subnet.id]
+
+  subnet_ids = [
+    aws_subnet.private["a"].id,
+    aws_subnet.private["b"].id,
+  ]
+
+  version         = "1.36"
+  release_version = "1.36.3-20260827"
+  ami_type        = "AL2023_x86_64_STANDARD"
+  capacity_type   = "ON_DEMAND"
+  disk_size       = 20
   instance_types  = var.node_instance_types
 
   scaling_config {
-    desired_size = var.node_desired_size
     min_size     = var.node_min_size
+    desired_size = var.node_desired_size
     max_size     = var.node_max_size
   }
 
   update_config {
     max_unavailable = 1
-  }
-
-  remote_access {
-    ec2_ssh_key = null
-    source_security_group_ids = [
-      aws_security_group.eks_nodes.id
-    ]
+    update_strategy = "DEFAULT"
   }
 
   depends_on = [
@@ -50,17 +61,9 @@ resource "aws_eks_node_group" "this" {
     aws_iam_role_policy_attachment.eks_cni,
     aws_iam_role_policy_attachment.ecr_read_only
   ]
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-node"
-  }
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
-  name              = "/aws/eks/${var.project_name}-${var.environment}/cluster"
-  retention_in_days = 30
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-eks-logs"
-  }
+  name              = "/aws/eks/groovy-eks-cluster/cluster"
+  retention_in_days = 0
 }

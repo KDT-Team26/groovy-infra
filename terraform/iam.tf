@@ -12,7 +12,9 @@ data "aws_iam_policy_document" "eks_assume_role" {
 }
 
 resource "aws_iam_role" "eks_cluster" {
-  name               = "${var.project_name}-${var.environment}-eks-cluster"
+  name        = "groovy-eks-cluster-role"
+  description = "Allows the cluster Kubernetes control plane to manage AWS resources on your behalf."
+
   assume_role_policy = data.aws_iam_policy_document.eks_assume_role.json
 }
 
@@ -21,19 +23,24 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
-resource "aws_iam_role" "eks_nodes" {
-  name = "${var.project_name}-${var.environment}-eks-nodes"
+data "aws_iam_policy_document" "eks_node_assume_role" {
+  statement {
+    effect = "Allow"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      }
-      Action = "sts:AssumeRole"
-    }]
-  })
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "eks_nodes" {
+  name        = "groovy-eks-node-role"
+  description = "Allows EC2 instances to call AWS services on your behalf."
+
+  assume_role_policy = data.aws_iam_policy_document.eks_node_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "eks_worker_node" {
@@ -48,5 +55,5 @@ resource "aws_iam_role_policy_attachment" "eks_cni" {
 
 resource "aws_iam_role_policy_attachment" "ecr_read_only" {
   role       = aws_iam_role.eks_nodes.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
 }
