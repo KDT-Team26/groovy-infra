@@ -16,6 +16,12 @@ variable "environment" {
   default     = "prod"
 }
 
+variable "domain_name" {
+  description = "Registered public domain used by the Groovy platform."
+  type        = string
+  default     = "groovy-team26.com"
+}
+
 variable "vpc_cidr" {
   description = "CIDR block of the existing Groovy VPC."
   type        = string
