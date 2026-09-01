@@ -43,10 +43,10 @@ spec:
                 - sh
                 - -c
                 - /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config /tmp/adminclient.conf
-            initialDelaySeconds: 20
-            failureThreshold: 10
-            periodSeconds: 10
-            timeoutSeconds: 10
+            initialDelaySeconds: 30
+            failureThreshold: 6
+            periodSeconds: 20
+            timeoutSeconds: 30
           volumeMounts:
             - name: groovy-kafka-data
               mountPath: {{ .Values.kafka.persistence.mountPath }}
