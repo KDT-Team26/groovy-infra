@@ -7,8 +7,8 @@
 # 멱등성 있게 짰다(이미 존재하는 리소스는 그대로 두거나 최신 내용으로 갱신만 함, 삭제 없음).
 #
 # 미리 알아둘 것:
-#   - 현재는 non-HA(단일 인스턴스) 설치를 쓴다. HA로 가려면 STEP 2의 URL을
-#     .../stable/manifests/install.yaml → .../stable/manifests/ha/install.yaml 로 바꾼다.
+#   - EKS 이관 결정(2026-09-01)에 따라 HA(멀티 인스턴스) 설치를 쓴다 — STEP 2가
+#     .../stable/manifests/ha/install.yaml 를 받는다. non-HA로 되돌리려면 URL에서 ha/ 를 뺀다.
 #   - 시크릿은 Sealed Secrets가 아니라 ESO(External Secrets Operator)로 관리한다 — 이
 #     스크립트는 ESO를 설치하지 않는다(1단계에서 이미 설치·검증 완료, argocd/bootstrap/
 #     external-secrets-clustersecretstore.yaml 참고). 이 클러스터에 ESO가 없으면 STEP 5보다
@@ -32,12 +32,12 @@ echo "[1/6] argocd 네임스페이스 생성(이미 있으면 그대로 둠)"
 kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
 echo
-echo "[2/6] ArgoCD 코어 설치 (stable 채널, non-HA)"
+echo "[2/6] ArgoCD 코어 설치 (stable 채널, HA)"
 # --server-side 필수: applicationsets.argoproj.io CRD가 커서 기본(client-side) apply로는
 # "metadata.annotations: Too long"(last-applied-configuration이 256KB 제한 초과) 에러가 난다.
 # --force-conflicts는 이 명령을 재실행하거나 위 CRD들을 이미 client-side로 만들어본 적 있을 때
 # 소유권 충돌 없이 서버사이드 관리로 넘어오게 한다.
-kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/ha/install.yaml
 
 echo
 echo "[2/6] 전체 Pod가 Ready 될 때까지 대기 (최대 5분)"
