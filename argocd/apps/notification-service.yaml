@@ -23,13 +23,13 @@ spec:
         # 시크릿은 ESO(External Secrets Operator)로 관리한다(1단계 전환 완료) — 이 차트의
         # notification-service-secret은 ExternalSecret이 groovy/rds/notification(Secrets Manager)에서
         # 직접 값을 가져와 동기화한다. values.yaml에 값을 넣을 필요 없음.
-  # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
-  # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야
-  # 서비스 간 short-name DNS(mysql, identity-service 등)가 같은 네임스페이스 안에서 계속
-  # 해석된다 — 하나라도 다른 네임스페이스로 빠지면 그 서비스만 접속이 끊긴다.
+  # 운영 서버 실제 배포 네임스페이스는 groovy-application이다(2026-09-01, 어플리케이션/
+  # 모니터링 네임스페이스 분리 결정 — 멘토 피드백 반영). platform(mysql/kafka/redis)까지
+  # 포함해 8개 Application이 여기로 통일되어야 서비스 간 short-name DNS가 계속 해석된다.
+  # groovy-monitoring(observability)과의 상호 참조는 FQDN(<svc>.<ns>.svc.cluster.local)으로 처리.
   destination:
     server: https://kubernetes.default.svc
-    namespace: groovy-kubernates
+    namespace: groovy-application
   syncPolicy:
     automated:
       prune: true

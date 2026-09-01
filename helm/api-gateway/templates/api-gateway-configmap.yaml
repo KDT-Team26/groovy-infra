@@ -11,3 +11,4 @@ data:
   CALENDAR_SERVICE_URL: {{ printf "http://calendar-service:%v" .Values.calendarService.port | quote }}
   CONTENT_SERVICE_URL: {{ printf "http://content-service:%v" .Values.contentService.port | quote }}
   APP_CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}
+  OTLP_TRACING_ENDPOINT: "http://tempo.groovy-monitoring.svc.cluster.local:4318/v1/traces"

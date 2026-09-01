@@ -17,35 +17,36 @@ data:
                 - "alertmanager:{{ .Values.alertmanager.port }}"
 
     scrape_configs:
+      # groovy-application 네임스페이스 서비스라 FQDN으로 스크레이프(2026-09-01, 네임스페이스 분리).
       - job_name: api-gateway
         metrics_path: /actuator/prometheus
         static_configs:
-          - targets: ["api-gateway:{{ .Values.apiGateway.managementPort }}"]
+          - targets: ["api-gateway.groovy-application.svc.cluster.local:{{ .Values.apiGateway.managementPort }}"]
 
       - job_name: identity-service
         metrics_path: /actuator/prometheus
         static_configs:
-          - targets: ["identity-service:{{ .Values.identityService.port }}"]
+          - targets: ["identity-service.groovy-application.svc.cluster.local:{{ .Values.identityService.port }}"]
 
       - job_name: study-service
         metrics_path: /actuator/prometheus
         static_configs:
-          - targets: ["study-service:{{ .Values.studyService.port }}"]
+          - targets: ["study-service.groovy-application.svc.cluster.local:{{ .Values.studyService.port }}"]
 
       - job_name: content-service
         metrics_path: /actuator/prometheus
         static_configs:
-          - targets: ["content-service:{{ .Values.contentService.port }}"]
+          - targets: ["content-service.groovy-application.svc.cluster.local:{{ .Values.contentService.port }}"]
 
       - job_name: calendar-service
         metrics_path: /actuator/prometheus
         static_configs:
-          - targets: ["calendar-service:{{ .Values.calendarService.port }}"]
+          - targets: ["calendar-service.groovy-application.svc.cluster.local:{{ .Values.calendarService.port }}"]
 
       - job_name: notification-service
         metrics_path: /actuator/prometheus
         static_configs:
-          - targets: ["notification-service:{{ .Values.notificationService.port }}"]
+          - targets: ["notification-service.groovy-application.svc.cluster.local:{{ .Values.notificationService.port }}"]
 
       - job_name: tempo
         metrics_path: /metrics

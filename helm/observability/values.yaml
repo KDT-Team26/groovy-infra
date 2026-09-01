@@ -9,15 +9,15 @@ mysqldExporter:
     username: root
   instances:
     identity:
-      host: identity-mysql
+      host: identity-mysql.groovy-application.svc.cluster.local
     study:
-      host: study-mysql
+      host: study-mysql.groovy-application.svc.cluster.local
     content:
-      host: content-mysql
+      host: content-mysql.groovy-application.svc.cluster.local
     calendar:
-      host: calendar-mysql
+      host: calendar-mysql.groovy-application.svc.cluster.local
     notification:
-      host: notification-mysql
+      host: notification-mysql.groovy-application.svc.cluster.local
 
 kafkaExporter:
   replicaCount: 1
@@ -27,7 +27,7 @@ kafkaExporter:
     pullPolicy: IfNotPresent
   port: 9308
   kafka:
-    host: kafka
+    host: kafka.groovy-application.svc.cluster.local
     port: 9092
     username: "app"
     saslMechanism: "plain"
