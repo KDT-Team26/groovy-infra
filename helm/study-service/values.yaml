@@ -46,7 +46,7 @@ studyService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: study-mysql
+    host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: study_db
     username: study_service
