@@ -17,6 +17,7 @@ spec:
     helm:
       valueFiles:
         - values.yaml
+        - values-ha.yaml  # HA 프로파일 활성화(2026-09-01 결정) — replicaCount=2/HPA minReplicas=2
         # values.amd64.yaml는 삭제함(2026-08-26) — CI(build-and-deploy.yml)가 platforms 지정
         # 없이 GitHub Actions 러너(ubuntu-latest=amd64) 기준으로만 빌드하므로 values.yaml의
         # image.tag가 이미 amd64 이미지다. amd64 오버라이드가 CI가 갱신한 정확한 sha 태그를
