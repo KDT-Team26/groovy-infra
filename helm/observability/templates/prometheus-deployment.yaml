@@ -25,6 +25,11 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/prometheus-configmap.yaml") . | sha256sum }}
         checksum/alert-rules: {{ include (print $.Template.BasePath "/prometheus-alert-rules-configmap.yaml") . | sha256sum }}
     spec:
+      # 공식 prom/prometheus 이미지는 non-root(65534, nobody)로 실행되는데, EBS 볼륨은 기본
+      # root 소유로 마운트돼서 fsGroup 없이는 /prometheus 쓰기 권한이 없어 시작부터 panic
+      # 난다(loki-statefulset.yaml의 fsGroup:10001과 같은 이유, 2026-09-02 실배포 중 발견).
+      securityContext:
+        fsGroup: 65534
       containers:
         - name: prometheus
           image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
