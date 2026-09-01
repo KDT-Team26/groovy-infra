@@ -12,9 +12,7 @@ spec:
     rollingUpdate:
       maxUnavailable: {{ .Values.frontend.rollout.maxUnavailable }}
       maxSurge: {{ .Values.frontend.rollout.maxSurge }}
-  {{- if not .Values.frontend.hpa.enabled }}
   replicas: {{ .Values.frontend.replicaCount }}
-  {{- end }}
   selector:
     matchLabels:
       app: frontend
