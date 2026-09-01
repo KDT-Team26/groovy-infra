@@ -46,7 +46,7 @@ studyService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: study-mysql
+    host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: study_db
     username: study_service
@@ -71,7 +71,3 @@ studyService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
-
-sealedSecretData:
-  studyService:
-    dbPassword: AgCz5SXgZbI6B6Qak74TxsJN7O+Ehz6a+zuv+TcSJS9P2YLVlmXoy7SaBA8u77ntrDz+kzWs4R3+YZ0Q0ScmJujXjO7pT61HpVsuYin1Zk2P5w8/YO7mGu5QIBQNebgze51lY6FQWZTar8USjZOMIENobqHuW/KaLakvtL5cl+HfmvgaGerHpEPaDpgB9oj/gT21QyEygY3k0M54pyECKx3/rfmOA4j5ARCHa8ltSyfB1VamG1wCXdpAFU94ituR5OXAQPnqauHFhvqIircX31L8kZwPsugm0+03Vq1Xw73QCtLa0dA/U5IJAJmRSaELOswMSVvAIhvWDhnBp5xWGhgkDworrJEqultZl55wDQQDhVF2Zg7E71H/t7X5ttgxo+NYqDrAV+bf2/FgtoPJQyW1iqfujecOwSuw2v1mZZgutZF/993ZXpJ+1hRSBOG4CbbSKQP2TAEnqjThiZyaHmuS2wTvKMOCq3hyk+2z0rp9v2DpuGzWU2N2sxeFftNRBP6HbYWKoAeahiS2ur0VbbK99Zp0uqGG5PNc+Zn4dhV1izuVkUTL8ihYFvU8lJet2n+OmdaWZS5BduV4eTQ5186Rlo8KCxqHb9faIlmRSE+0+hUxNH3bzz99z7kKMlWbrJ9Q/Tu650HLAZDOWuTDiJyv5O9z7pv8aJXqb3ca8n1t3UpuA1c7sL8DOwLD7sK7ayUavnbnMjEjiaam

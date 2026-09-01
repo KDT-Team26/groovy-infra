@@ -46,7 +46,7 @@ contentService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: content-mysql
+    host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: content_db
     username: content_service
@@ -75,7 +75,3 @@ contentService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
-
-sealedSecretData:
-  contentService:
-    dbPassword: AgBoBOkHd6wA9hInH3oxVUtfD2k6lU448JbVCkEAY7Ue5UsI4KYW1CHuRackTKlLpJpLfzInFVJWfIr4JIzMOc20pOyVldDcLQFnmqeKTFj6JqqwkCWshXboHhoQek7nHd+SXHZcYav6xFn9OUyk3mu9z6ZmS5R43RPTMwhTvZUkRB3ZadqowYftrCkjTjyW1cUpqj8hHV1QpUvZep1f2EUU12kU+7kDMQpHWXBMW4qynrMUmXFtj01s/g+4xakCtWPmeVlUJECT5n9ruLOZIUqWGv4iwIgWUzy5SbrL1gpbgWpCeMxnneqeccdWiJto/UoyAjAV5A2lzQdrOXEYJX21b/M4N7yMxNsIc74lS5ga3qhRtaHdirDuymc7rkxHKub8ksvkG8chK5+leyvQOjo3r4XERs1id9Nqg01AW+/jmZkiZEqrj4JvMvUKtCL4YMX/MgT6Jitbb3BgqbvPTu7YtdPFqzvQSNOkA5akDhf88m08peiS5hMW4sqeX/JoFkbGlihDy7cYJIFqVPNPi8kLO9jlHlMxkPJNRI2S2VUx3W5+LEMoCz2ooKyeFOjtdAKohx5JtNgzBDDF7gNJ4SVqLyvBYnrxyFHLgZrHEMzDU5jKWMecX9CP0vyBkmN3yRsNPaybI4tzGYGI7kqM8QEJBGmeluNrSPbdBxIFCLQB70sBLbfymCYyYIScCNCe7LfQnOU3KtqXxQWp

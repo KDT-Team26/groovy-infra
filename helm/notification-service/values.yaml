@@ -46,7 +46,7 @@ notificationService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: notification-mysql
+    host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: notification_db
     username: notification_service
@@ -72,7 +72,3 @@ notificationService:
 # 않고 게이트웨이를 경유하는 REST + SSE 뿐이라 CORS_ALLOWED_ORIGINS 환경변수 자체가 없다).
 config:
   timezone: "Asia/Seoul"
-
-sealedSecretData:
-  notificationService:
-    dbPassword: AgCIqR0RcR2GyW1AjDo9ZlFG9HtBp/KO1Vy72+sqZJ5Bx2SkpArqbR/nKXqm7E80WamBfdhxYxygs54qc3jE1NpDP0yHpyIWryzhnH2rsIBLX0H9u6o22Dtr2HbCF26q1vwGPKJ1tfs1NNiwDfGF5P6BoHLjk6c85rj/EA1XdBK3e9/rHql0J3vjuOOOFWRNyhPjATcs4MMLVrVjqsuSFZdnRSKvXkrU6lIz1Uey5K8C0pl9boJa2dp1XMDK9x/X4xyijQWPfnPZiLYcRyhLz3vWAGd8IJr/tlzejOonS2vlhCqp2mUKBFgpzmvp/+EwhfZcQ84tmTAfYk9Vh83QlhvI5BaEJMc42Ije1nAIHC7wU4NnxyrOeOoiAcNRHzBPn66L0GgpfprLRMnYNxzoJeS/ytZjtlSqqyLY0jmAdI3TEsQTfLVaaj/Dg3BLI7zL3to0ftg6S/ilp5x/bLHXj93PayuYqdTy8XIFAh6OubuV4a/MFL3pU66WCj+UQpiGtDLTd6s5tM+t/+FgQ9CpvboUJjWfOgTWlj3QL6Gnp37sParIq0aRSG65xLUs7tXebcwieLESITB7dtPq5ZcZ0D8GM7hAmfdOVTh3lxZy4Z62+qKQTfcsGmreCnYj9LUF/8Mpq3Fr346GQXFNY/I8YmPX70Revplt+/2dwrwUNK/F3RYamychOqCBOVO6EzBm98vszCAOvzr+5j+g
