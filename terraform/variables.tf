@@ -48,7 +48,12 @@ variable "node_instance_types" {
 variable "node_desired_size" {
   description = "Desired number configured on the existing EKS managed node group."
   type        = number
-  default     = 2
+  default     = 10
+  # 2026-09-02: t3.small(노드당 최대 파드 11개) 제약으로 실배포(2단계) 전체 파드가 못 뜨는
+  # 문제 때문에 3 -> 10으로 임시 확장(ASG를 직접 조정, 노드그룹 자체가 CREATE_FAILED 상태로
+  # 멈춰 있어 EKS 노드그룹 API로는 갱신이 안 돼서 aws autoscaling update-auto-scaling-group
+  # 으로 우회함). 다음 팀 회의에서 인스턴스 타입 상향 등 정식 방향이 정해지면 이 값도 같이
+  # 조정할 것 — 지금 값은 확정이 아니라 임시 조치.
 }
 
 variable "node_min_size" {
@@ -60,5 +65,5 @@ variable "node_min_size" {
 variable "node_max_size" {
   description = "Current maximum number of EKS worker nodes."
   type        = number
-  default     = 3
+  default     = 10
 }
