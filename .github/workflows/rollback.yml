@@ -22,7 +22,6 @@ on:
           - calendar-service
           - content-service
           - notification-service
-          - frontend
       to_sha:
         description: 되돌릴 이미지 태그(git sha). 비우면 git 이력에서 직전 태그 자동 추출.
         required: false

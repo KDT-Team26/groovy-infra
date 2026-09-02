@@ -1,6 +1,6 @@
 # metrics-server — HPA가 CPU/메모리 사용량 조회하는 metrics.k8s.io API 제공.
 # 지금까지 minikube addon(imperative)으로 수동 설치돼서 GitOps 관리 밖에 있었음.
-# 공식 Helm chart를 ArgoCD가 직접 받아오게 해서 다른 9개 Application과 동일하게 선언적으로 관리.
+# 공식 Helm chart를 ArgoCD가 직접 받아오게 해서 다른 8개 Application과 동일하게 선언적으로 관리.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
