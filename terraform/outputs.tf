@@ -57,3 +57,8 @@ output "application_secret_arn" {
   description = "ARN of the existing application secret."
   value       = aws_secretsmanager_secret.application.arn
 }
+
+output "ecr_repository_urls" {
+  description = "ECR repository URLs for the 6 backend services (frontend excluded — moving to S3+CloudFront in phase 6)."
+  value       = { for name, repo in aws_ecr_repository.backend : name => repo.repository_url }
+}
