@@ -11,3 +11,4 @@ data:
   DB_POOL_MIN_IDLE: {{ .Values.identityService.dbPool.minIdle | quote }}
   CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}
   TZ: {{ .Values.config.timezone | quote }}
+  OTLP_TRACING_ENDPOINT: "http://tempo.groovy-monitoring.svc.cluster.local:4318/v1/traces"

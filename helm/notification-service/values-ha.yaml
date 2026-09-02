@@ -1,7 +1,10 @@
 # HA 프로파일 (#91) — 상세 설명은 identity-service/values-ha.yaml 참고.
 # 활성화: argocd/apps/notification-service.yaml 의 helm.valueFiles 에 - values-ha.yaml 추가.
 notificationService:
-  replicaCount: 2
+  replicaCount: 2   # hpa.enabled=true 라 실제로는 아래 hpa.minReplicas가 적용됨(hpa 끄게 될 경우 대비)
+  hpa:
+    minReplicas: 2
+    maxReplicas: 4
   pdb:
     enabled: true
     minAvailable: 1
