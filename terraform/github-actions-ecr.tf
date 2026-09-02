@@ -16,16 +16,19 @@ data "aws_iam_policy_document" "github_actions_ecr_assume_role" {
       values   = ["sts.amazonaws.com"]
     }
 
+    # KDT-Team26 조직이 OIDC subject claim에 조직/레포 numeric ID를 포함하도록 설정돼 있어서
+    # 실제 sub 값은 "repo:KDT-Team26@<orgId>/<repo>@<repoId>:ref:refs/heads/main" 형태로 온다
+    # (CloudTrail로 확인). org/repo 이름은 고정하고 숫자 ID만 와일드카드로 허용한다.
     condition {
-      test     = "StringEquals"
+      test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:KDT-Team26/groovy-gateway-service:ref:refs/heads/main",
-        "repo:KDT-Team26/groovy-identity-service:ref:refs/heads/main",
-        "repo:KDT-Team26/groovy-study-service:ref:refs/heads/main",
-        "repo:KDT-Team26/groovy-content-service:ref:refs/heads/main",
-        "repo:KDT-Team26/groovy-calendar-service:ref:refs/heads/main",
-        "repo:KDT-Team26/groovy-notification-service:ref:refs/heads/main",
+        "repo:KDT-Team26@*/groovy-gateway-service@*:ref:refs/heads/main",
+        "repo:KDT-Team26@*/groovy-identity-service@*:ref:refs/heads/main",
+        "repo:KDT-Team26@*/groovy-study-service@*:ref:refs/heads/main",
+        "repo:KDT-Team26@*/groovy-content-service@*:ref:refs/heads/main",
+        "repo:KDT-Team26@*/groovy-calendar-service@*:ref:refs/heads/main",
+        "repo:KDT-Team26@*/groovy-notification-service@*:ref:refs/heads/main",
       ]
     }
   }
