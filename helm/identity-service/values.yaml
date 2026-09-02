@@ -1,7 +1,7 @@
 identityService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
-    repository: ttt103/groovy-identity-service
+    repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-identity-service
     tag: "289a0a9d5d9b22eee9b87cb58fc835e4a5d5e4fd"
     # 태그가 sha 고정이라 K8s 기본값은 IfNotPresent지만, 6개 서비스 간 일관성을 위해 명시.
     pullPolicy: IfNotPresent
