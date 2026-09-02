@@ -1,9 +1,9 @@
 apiGateway:
   replicaCount: 1
   image:
-    # Docker Hub 리포지토리명은 groovy-gateway-service(서비스 레포명과 동일)로 생성됐다 —
+    # ECR 저장소명은 groovy-gateway-service(서비스 레포명과 동일)로 생성됐다 —
     # 차트/values 키 이름은 api-gateway/apiGateway를 그대로 쓰지만 이미지 리포지토리명만 다르다.
-    repository: ttt103/groovy-gateway-service
+    repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-gateway-service
     tag: "8f81df2f1f984dd7aec2bf7889179236f2942158"
     pullPolicy: IfNotPresent
   port: 8080
