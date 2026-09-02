@@ -31,9 +31,12 @@ data "aws_iam_policy_document" "github_actions_ecr_assume_role" {
   }
 }
 
+# AWS IAM의 description 필드는 ASCII+Latin-1 범위만 허용해서 한글이 들어가면 CreateRole이
+# ValidationError로 거부한다 — 그래서 description은 영어로 쓰고 설명은 이 주석에 한글로 남긴다.
+# 역할 설명: GitHub Actions CI가 6개 백엔드 서비스 이미지를 ECR에 push할 때 assume하는 역할.
 resource "aws_iam_role" "github_actions_ecr" {
   name               = "groovy-github-actions-ecr-role"
-  description        = "GitHub Actions CI가 6개 백엔드 서비스 이미지를 ECR에 push할 때 assume하는 역할."
+  description        = "Assumed by GitHub Actions CI to push backend service images to ECR."
   assume_role_policy = data.aws_iam_policy_document.github_actions_ecr_assume_role.json
 }
 
