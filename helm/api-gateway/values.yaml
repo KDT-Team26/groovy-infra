@@ -68,4 +68,4 @@ notificationService:
   port: 8085
 
 config:
-  corsAllowedOrigins: "http://beancp.com:5173"
+  corsAllowedOrigins: "http://beancp.com:5173,https://www.groovy-team26.com"
