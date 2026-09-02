@@ -1,4 +1,4 @@
-﻿apiVersion: networking.k8s.io/v1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: api-gateway
@@ -9,6 +9,10 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.apiGateway.certificateArn }}
     alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: '8090'
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+    alb.ingress.kubernetes.io/success-codes: '200-399'
 spec:
   ingressClassName: alb
   rules:
@@ -21,4 +25,4 @@ spec:
               service:
                 name: api-gateway
                 port:
-                  number: {{ .Values.apiGateway.service.port }}
+                  number: {{ .Values.apiGateway.port }}

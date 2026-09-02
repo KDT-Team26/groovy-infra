@@ -31,10 +31,32 @@ resource "aws_route53_record" "api_certificate_validation" {
   name            = tolist(aws_acm_certificate.api.domain_validation_options)[0].resource_record_name
   type            = tolist(aws_acm_certificate.api.domain_validation_options)[0].resource_record_type
   ttl             = 60
-  records         = [tolist(aws_acm_certificate.api.domain_validation_options)[0].resource_record_value]
+  records = [
+    tolist(aws_acm_certificate.api.domain_validation_options)[0].resource_record_value
+  ]
 }
 
 resource "aws_acm_certificate_validation" "api" {
-  certificate_arn         = aws_acm_certificate.api.arn
-  validation_record_fqdns = [aws_route53_record.api_certificate_validation.fqdn]
+  certificate_arn = aws_acm_certificate.api.arn
+  validation_record_fqdns = [
+    aws_route53_record.api_certificate_validation.fqdn
+  ]
+}
+
+data "aws_lb" "api_gateway" {
+  tags = {
+    "elbv2.k8s.aws/cluster" = "groovy-eks-cluster"
+  }
+}
+
+resource "aws_route53_record" "api" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "api.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = "dualstack.${data.aws_lb.api_gateway.dns_name}"
+    zone_id                = data.aws_lb.api_gateway.zone_id
+    evaluate_target_health = true
+  }
 }
