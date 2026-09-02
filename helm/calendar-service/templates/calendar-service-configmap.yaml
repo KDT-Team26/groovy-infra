@@ -21,3 +21,4 @@ data:
   KAFKA_SASL_MECHANISM: {{ .Values.calendarService.kafka.saslMechanism | quote }}
   CORS_ALLOWED_ORIGINS: {{ .Values.config.corsAllowedOrigins | quote }}
   TZ: {{ .Values.config.timezone | quote }}
+  OTLP_TRACING_ENDPOINT: "http://tempo.groovy-monitoring.svc.cluster.local:4318/v1/traces"

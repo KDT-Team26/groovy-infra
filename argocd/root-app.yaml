@@ -1,7 +1,4 @@
-# GitOps 빌드 지시서 Phase 04 — App of Apps 최상위 진입점.
-# 최초 1회만 수동으로 apply한다(`kubectl apply -n argocd -f argocd/root-app.yaml`).
-# 그 이후로는 이 Application이 argocd/apps/ 디렉토리 자체를 감시하며, 그 안에 새 Application
-# YAML을 추가/수정/삭제하는 것만으로 하위 9개 Application이 함께 선언적으로 관리된다.
+# 아르고CD App of Apps 최상위 진입점.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

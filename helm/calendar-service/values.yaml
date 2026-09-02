@@ -1,8 +1,8 @@
 calendarService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
-    repository: ttt103/groovy-calendar-service
-    tag: "c619b87ce97ede1757130139c5bf447b2eff08c5"
+    repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-calendar-service
+    tag: "e79d81744567e32c9c5d31ddd0edebb1699ccec3"
     pullPolicy: IfNotPresent
   port: 8084
   # 롤아웃 안전장치 + health probe(#90) — 상세 설명은 identity-service/values.yaml 참고.
@@ -46,7 +46,7 @@ calendarService:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
   database:
-    host: calendar-mysql
+    host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
     name: calendar_db
     username: calendar_service
@@ -71,7 +71,3 @@ calendarService:
 config:
   corsAllowedOrigins: "http://localhost:5173"
   timezone: "Asia/Seoul"
-
-sealedSecretData:
-  calendarService:
-    dbPassword: AgC/JAvOAIrj6HwMDep9di4LSXhfAMj3XkmuqP8Ci9VmFmONIxlng9xUTml4XaNHnrj/d+0zV1Ghgi2l5zYb/ioGA+sAdvFU3uO+CMBDAF9M9IVMjJf0QlN2ab6p13cEOMjjdRoh+YNWw8zxlgFX4awwz4xH9VKIUnR+mwlhM9gpb1INx0uFPpV5pANjqyim6rCa8MFtMspmJNlWT54nKbpklXgDZjexh18q+zOS9EwISI0+3BXB5lEEL/cNyhXljsFdvklbVBVslLup7u2otX00uPh8+ZLgfEY+WnKCex1OzRiTIMyMaH3RuF+BSlT8rbiOgfAi5LnbecgAm2Z2rOisNoM8sScmGfDnkXn4OP3EQUGG73mIeLDr3CAW2JpLibIQ9rVSjHaPdN+wsES33ebiT4OP8dJhu/BffEjKfPeyVeRQHovQfQKVKRxp3+EtO3zslcywTSVnEm33KKKJGbm7lCynsyt3lrx21G5p3IMaBI6VIp97rsIaZ89GFYpPBFrdjEa//4RJXJB9FpZbamHfM0oTjqZTCe5yEupv1SEVQUbWIfbHBzeNQSxkEsypqRxNdui3njHi9emYOTJuiAlP1po5krGRi3FAx6Hz00il8MNlgVKcHi/y41jmgT6aemBrKVmowk4x8z674u5YMI7c/d4JKyXBCOdYYQwpQerYNP05GfqNqCF/L1fUJbIflEgVWfOYa1jE3aWZ

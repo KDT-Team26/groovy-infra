@@ -58,6 +58,10 @@ output "application_secret_arn" {
   value       = aws_secretsmanager_secret.application.arn
 }
 
+output "ecr_repository_urls" {
+  description = "ECR repository URLs for the 6 backend services (frontend excluded)"
+  value       = { for name, repo in aws_ecr_repository.backend : name => repo.repository_url }
+}
 output "route53_zone_id" {
   description = "ID of the public Route 53 hosted zone."
   value       = aws_route53_zone.primary.zone_id

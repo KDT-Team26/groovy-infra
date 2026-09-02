@@ -16,19 +16,20 @@ spec:
     helm:
       valueFiles:
         - values.yaml
+        - values-ha.yaml  # HA 프로파일 활성화(2026-09-01 결정) — replicaCount=2/HPA minReplicas=2
         # values.amd64.yaml는 삭제함(2026-08-26) — CI가 GitHub Actions 러너(amd64) 기준으로만
         # 빌드해서 values.yaml의 image.tag가 이미 amd64 이미지다. 오버라이드가 CI가 갱신한
         # 정확한 sha 태그를 빌드된 적 없는 옛 태그로 덮어써 ImagePullBackOff를 냈던 게 원인이었다.
-        # 시크릿(secret.calendarService.dbPassword)은 Sealed Secrets로 전환됨(2026-08-26) — 이
-        # values.yaml의 sealedSecretData.calendarService.dbPassword에 암호화된 값을 직접 넣는다
-        # (argocd/bootstrap/seal-secret-values.sh). platform과 원본 값이 일치해야 함.
-  # 운영 서버 실제 배포 네임스페이스는 default가 아니라 groovy-kubernates다(팀장님이 별도
-  # 구축한 네임스페이스, Grafana 관측 대상도 이 기준). 9개 Application 전부 여기로 통일해야
-  # 서비스 간 short-name DNS(mysql, identity-service 등)가 같은 네임스페이스 안에서 계속
-  # 해석된다 — 하나라도 다른 네임스페이스로 빠지면 그 서비스만 접속이 끊긴다.
+        # 시크릿은 ESO(External Secrets Operator)로 관리한다(1단계 전환 완료) — 이 차트의
+        # calendar-service-secret은 ExternalSecret이 groovy/rds/calendar(Secrets Manager)에서
+        # 직접 값을 가져와 동기화한다. values.yaml에 값을 넣을 필요 없음.
+  # 운영 서버 실제 배포 네임스페이스는 groovy-application이다(2026-09-01, 어플리케이션/
+  # 모니터링 네임스페이스 분리 결정 — 멘토 피드백 반영). platform(mysql/kafka/redis)까지
+  # 포함해 7개 Application이 여기로 통일되어야 서비스 간 short-name DNS가 계속 해석된다.
+  # groovy-monitoring(observability)과의 상호 참조는 FQDN(<svc>.<ns>.svc.cluster.local)으로 처리.
   destination:
     server: https://kubernetes.default.svc
-    namespace: groovy-kubernates
+    namespace: groovy-application
   syncPolicy:
     automated:
       prune: true

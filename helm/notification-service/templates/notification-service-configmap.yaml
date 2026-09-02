@@ -20,3 +20,4 @@ data:
   KAFKA_SASL_MECHANISM: {{ .Values.notificationService.kafka.saslMechanism | quote }}
   NOTIFICATION_KAFKA_TOPIC: {{ .Values.notificationService.kafka.topic | quote }}
   TZ: {{ .Values.config.timezone | quote }}
+  OTLP_TRACING_ENDPOINT: "http://tempo.groovy-monitoring.svc.cluster.local:4318/v1/traces"
