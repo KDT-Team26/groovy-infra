@@ -1,9 +1,7 @@
-# 3단계(이미지 저장소 전환) — Docker Hub(ttt103/*) 대신 쓸 ECR 저장소. 6개 백엔드 서비스만
-# 대상으로 한다 — frontend는 6단계(S3+CloudFront)에서 컨테이너 이미지 자체가 없어질 예정이라
-# 지금 만들어봐야 곧 버려지므로 제외.
+# 이미지 저장소를 Docker Hub에서 ECR로 전환한다.
 locals {
   ecr_repositories = toset([
-    "groovy-gateway-service",
+    "groovy-gateway-service", # 프론트엔드는 S3+CloudFront로 배포할 예정이라 저장소 생성 안함
     "groovy-identity-service",
     "groovy-study-service",
     "groovy-content-service",
@@ -22,8 +20,6 @@ resource "aws_ecr_repository" "backend" {
     scan_on_push = true
   }
 
-  # 커스텀 KMS 키가 코드로 관리되고 있지 않아(RDS의 kms_key_id는 리터럴 ARN 참조) 기본
-  # AES256(AWS 관리형) 암호화를 쓴다 — 컨테이너 이미지 저장 용도에 KMS까지는 과함.
 }
 
 resource "aws_ecr_lifecycle_policy" "backend" {
@@ -35,11 +31,11 @@ resource "aws_ecr_lifecycle_policy" "backend" {
     rules = [
       {
         rulePriority = 1
-        description  = "최근 20개만 보관, 나머지 만료"
+        description  = "최근 5개만 보관, 나머지 만료"
         selection = {
           tagStatus   = "any"
           countType   = "imageCountMoreThan"
-          countNumber = 20
+          countNumber = 5
         }
         action = { type = "expire" }
       }

@@ -1,12 +1,4 @@
-# 3단계(이미지 저장소 전환) — GitHub Actions가 ECR에 이미지를 push할 때 쓸 IAM 역할.
-# 이 계정엔 이미 GitHub Actions용 OIDC 프로바이더(token.actions.githubusercontent.com)가
-# 등록돼 있다(groovy-github-actions-ssm-role이 쓰던 것과 동일 — 그 역할 자체는 무관한
-# 개인 레포(bebeghi/Test-groovy) 전용이라 재사용하지 않고 새로 만든다).
-#
-# 정적 AWS 액세스 키를 GitHub Secrets에 박아두는 대신 OIDC로 단기 자격증명을 받는 방식 —
-# 지금 Docker Hub 로그인에 쓰는 DOCKERHUB_USERNAME/TOKEN 같은 장기 시크릿보다 안전하다.
-# main 브랜치 push 트리거(현재 CI 조건과 동일)에서만 assume 가능하도록 sub 클레임을 6개
-# 서비스 레포로 제한한다.
+# # 이미지 저장소를 Docker Hub에서 ECR로 전환할 때, GitHub Actions가 ECR에 이미지를 push할 때 쓸 IAM 역할.
 
 data "aws_iam_policy_document" "github_actions_ecr_assume_role" {
   statement {
@@ -46,7 +38,7 @@ resource "aws_iam_role" "github_actions_ecr" {
 }
 
 data "aws_iam_policy_document" "github_actions_ecr_permissions" {
-  # GetAuthorizationToken은 리소스 레벨 권한을 지원하지 않아 반드시 "*"여야 한다(AWS 제약).
+  # GetAuthorizationToken은 리소스 레벨 권한을 지원하지 않아 반드시 "*"여야 함(AWS 제약
   statement {
     effect    = "Allow"
     actions   = ["ecr:GetAuthorizationToken"]
