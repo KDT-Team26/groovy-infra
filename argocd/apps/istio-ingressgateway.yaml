@@ -1,13 +1,6 @@
-# Istio 4단계(A안: ingress-only) — ingress gateway(Envoy) 배포.
-# 주의: service.type을 아직 LoadBalancer로 안 두고 ClusterIP로 둔다. LoadBalancer로 바꾸는
-# 순간 AWS Load Balancer Controller가 elbv2.k8s.aws/cluster=groovy-eks-cluster 태그를 단
-# 새 ALB를 만드는데, terraform/dns.tf의 `data "aws_lb" "api_gateway"`가 같은 태그로 ALB를
-# 하나만 있다고 가정하고 조회 중이라(api-gateway-ingress.yaml이 만든 ALB) 그 순간 조회가
-# 모호해져 terraform apply가 깨진다. 이 문제는 4-3(ACM/도메인 연결)에서 dns.tf를 함께
-# 고치면서 처리 예정 — 그 전까지는 클러스터 내부에서만 떠 있는 상태로 둔다.
+# ingress gateway(Envoy) 설치용 Application
 #
-# 리소스도 4-1 사전 계측 원칙에 따라 낮게 시작(공식 기본값 100m/128Mi는 이미 충분히 작아
-# request는 그대로 두고, limit만 t3.small 노드 예산에 맞춰 축소).
+# 리소스도 낮게 시작 (공식 기본값은 다음과 같음 100m/128Mi)
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
