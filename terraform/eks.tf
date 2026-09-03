@@ -40,7 +40,7 @@ resource "aws_eks_node_group" "this" {
 
   version         = "1.36"
   release_version = "1.36.3-20260827"
-  ami_type        = "AL2023_x86_64_STANDARD"
+  ami_type        = "AL2023_ARM_64_STANDARD"
   capacity_type   = "ON_DEMAND"
   disk_size       = 20
   instance_types  = var.node_instance_types
