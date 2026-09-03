@@ -1,0 +1,8 @@
+apiVersion: v2
+name: istio-gateway
+description: >
+  Istio ingress-only(A안) 외부 진입점 구성 — api-gateway-ingress.yaml과 동일하게
+  ALB가 TLS를 종료하고, 이후 트래픽은 istio-ingressgateway Service(ClusterIP,
+  target-type ip)로 넘어간다. Istio networking.istio.io/v1 Gateway 리소스는
+  이 ALB를 거쳐 들어온 평문 HTTP만 처리(TLS 블록 불필요).
+version: 0.1.0

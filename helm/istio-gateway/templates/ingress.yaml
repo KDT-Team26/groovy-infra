@@ -1,0 +1,37 @@
+# api-gateway-ingress.yaml과 동일한 패턴(ALB가 TLS 종료, target-type ip로 pod IP 직결).
+# 이 Ingress가 만드는 ALB는 ingress.k8s.aws/stack=istio-system/istio-ingressgateway 태그를
+# 갖게 되어(AWS LB Controller 규칙: <namespace>/<ingress 이름>), terraform/dns.tf의
+# data "aws_lb" "api_gateway" 태그 필터와 값만 다르면 그대로 재사용해서 특정할 수 있다
+# (4-7 카나리 전환 시 이 태그값으로 갈아끼우면 됨).
+#
+# 헬스체크는 api-gateway처럼 /actuator/health가 아니라, istio-ingressgateway 자체가
+# 노출하는 표준 준비 상태 엔드포인트(15021/healthz/ready)를 쓴다.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.istioGateway.certificateArn }}
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: '15021'
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz/ready
+    alb.ingress.kubernetes.io/success-codes: '200'
+spec:
+  ingressClassName: alb
+  rules:
+    - host: {{ .Values.istioGateway.domain | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: istio-ingressgateway
+                port:
+                  number: 80
