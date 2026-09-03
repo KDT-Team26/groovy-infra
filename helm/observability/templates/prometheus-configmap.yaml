@@ -57,12 +57,6 @@ data:
         static_configs:
           - targets: ["kafka-exporter:{{ .Values.kafkaExporter.port }}"]
 
-      - job_name: mysql
-        static_configs:
-          - targets:
-{{- range $name, $instance := .Values.mysqldExporter.instances }}
-              - "{{ $name }}-mysqld-exporter:{{ $.Values.mysqldExporter.port }}"
-{{- end }}
       - job_name: node-exporter
         static_configs:
           - targets: ["node-exporter:{{ .Values.nodeExporter.port }}"]
