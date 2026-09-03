@@ -62,3 +62,17 @@ output "ecr_repository_urls" {
   description = "ECR repository URLs for the 6 backend services (frontend excluded)"
   value       = { for name, repo in aws_ecr_repository.backend : name => repo.repository_url }
 }
+output "route53_zone_id" {
+  description = "ID of the public Route 53 hosted zone."
+  value       = aws_route53_zone.primary.zone_id
+}
+
+output "api_domain_name" {
+  description = "Public domain name reserved for the Groovy backend API."
+  value       = aws_acm_certificate.api.domain_name
+}
+
+output "api_certificate_arn" {
+  description = "ARN of the validated ACM certificate for the Groovy backend API."
+  value       = aws_acm_certificate_validation.api.certificate_arn
+}
