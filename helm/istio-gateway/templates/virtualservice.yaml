@@ -1,0 +1,95 @@
+# groovy-gateway-service의 application.yml(spring.cloud.gateway.server.webmvc.routes)에 있는
+# 라우팅 규칙을 그대로 옮긴 것. 원본과 순서를 동일하게 유지한다(Istio도 http 리스트 순서 =
+# 매칭 우선순위, Spring Cloud Gateway와 동일).
+#
+# Spring의 `Path=/api/xxx/**`는 `/api/xxx`(트레일링 슬래시 없음)와 그 하위 경로를 모두 매칭한다.
+# Istio의 uri.prefix는 순수 문자열 접두사 매칭이라 `prefix: /api/xxx/`로 쓰면 `/api/xxx`(슬래시
+# 없는 경우)를 못 잡고, `prefix: /api/xxx`로 쓰면 `/api/xxxYYY`처럼 경로 구분자가 없는 다른
+# 리소스까지 잘못 매칭될 수 있다 — 그래서 Spring의 AntPathMatcher `/**` 의미와 정확히 같도록
+# regex(`^/api/xxx(/.*)?$`)로 옮긴다. exact match 라우트는 그대로 exact로 옮긴다.
+#
+# 백엔드 서비스가 전부 groovy-application 네임스페이스에 있어서(이 차트는 istio-system) FQDN으로
+# 참조한다 — prometheus-configmap.yaml 등 이 레포의 다른 크로스 네임스페이스 참조와 동일 패턴.
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: api-gateway
+  namespace: istio-system
+spec:
+  hosts:
+    - {{ .Values.istioGateway.domain | quote }}
+  gateways:
+    - api-gateway
+  http:
+    - match:
+        - uri:
+            regex: ^/api/notifications(/.*)?$
+      route:
+        - destination:
+            host: notification-service.groovy-application.svc.cluster.local
+            port:
+              number: 8085
+    - match:
+        - uri:
+            regex: ^/api/auth(/.*)?$
+      route:
+        - destination:
+            host: identity-service.groovy-application.svc.cluster.local
+            port:
+              number: 8081
+    - match:
+        - uri:
+            exact: /api/users/me
+      route:
+        - destination:
+            host: identity-service.groovy-application.svc.cluster.local
+            port:
+              number: 8081
+    - match:
+        - uri:
+            regex: ^/api/studies(/.*)?$
+      route:
+        - destination:
+            host: study-service.groovy-application.svc.cluster.local
+            port:
+              number: 8082
+    - match:
+        - uri:
+            exact: /api/users/me/studies
+      route:
+        - destination:
+            host: study-service.groovy-application.svc.cluster.local
+            port:
+              number: 8082
+    - match:
+        - uri:
+            exact: /api/users/me/applications
+      route:
+        - destination:
+            host: study-service.groovy-application.svc.cluster.local
+            port:
+              number: 8082
+    - match:
+        - uri:
+            regex: ^/api/calendars(/.*)?$
+      route:
+        - destination:
+            host: calendar-service.groovy-application.svc.cluster.local
+            port:
+              number: 8084
+    - match:
+        - uri:
+            regex: ^/api/memoirs(/.*)?$
+      route:
+        - destination:
+            host: content-service.groovy-application.svc.cluster.local
+            port:
+              number: 8083
+    - match:
+        - uri:
+            regex: ^/api/tags(/.*)?$
+      route:
+        - destination:
+            host: identity-service.groovy-application.svc.cluster.local
+            port:
+              number: 8081
