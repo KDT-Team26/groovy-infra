@@ -29,74 +29,6 @@ kafka:
     size: 1Gi
     mountPath: /var/lib/kafka/data
 
-mysql:
-  image:
-    repository: mysql
-    tag: "8.0"
-    pullPolicy: IfNotPresent
-  port: 3306
-
-  instances:
-    identity:
-      replicaCount: 1
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "256Mi"
-        limits:
-          cpu: "500m"
-          memory: "512Mi"
-      persistence:
-        size: 100Mi
-
-    study:
-      replicaCount: 1
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "256Mi"
-        limits:
-          cpu: "500m"
-          memory: "512Mi"
-      persistence:
-        size: 100Mi
-
-    content:
-      replicaCount: 1
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "256Mi"
-        limits:
-          cpu: "500m"
-          memory: "512Mi"
-      persistence:
-        size: 100Mi
-
-    calendar:
-      replicaCount: 1
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "256Mi"
-        limits:
-          cpu: "500m"
-          memory: "512Mi"
-      persistence:
-        size: 100Mi
-
-    notification:
-      replicaCount: 1
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "256Mi"
-        limits:
-          cpu: "500m"
-          memory: "512Mi"
-      persistence:
-        size: 100Mi
-
 redis:
   replicaCount: 1
   image:
@@ -107,7 +39,5 @@ redis:
   persistence:
     size: 100Mi
 
-# mysql-config.yaml이 TZ 환경변수로 참조한다. 서비스별 차트에도 동일 값이 각자 존재한다
-# (차트 독립성 우선, 단일 진실 공급원은 이 값들의 "원본 의도"인 GitOps 지시서 문서다).
 config:
   timezone: "Asia/Seoul"
