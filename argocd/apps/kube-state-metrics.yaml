@@ -1,7 +1,5 @@
 # kube-state-metrics — Kubernetes API 객체들(Deployment, Pod, Service 등)의 상태 메트릭을 생성하여 Prometheus가 수집하도록 함.
-# metrics-server와 마찬가지로 공식 Helm chart를 ArgoCD가 직접 받아오게 해서 선언적으로 관리.
-# Prometheus ConfigMap에 이미 `kube-state-metrics.kube-system.svc` 경로로 스크레이프 타겟이 지정되어 있으므로
-# namespace는 `kube-system`으로 배포해야 정상 연동됩니다.
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -14,7 +12,7 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-state-metrics
-    # 현재 시점의 안정 버전을 지정합니다 (필요시 `helm search repo`로 확인 후 수정 가능)
+
     targetRevision: "5.26.0"
     helm:
       values: |

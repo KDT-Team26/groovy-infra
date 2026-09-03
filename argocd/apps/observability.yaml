@@ -1,6 +1,3 @@
-# sync wave 5 — 마지막. prometheus가 각 서비스의 /actuator/prometheus를 스크레이프하므로 그
-# 서비스들이 먼저 떠 있는 편이 낫고, mysqld-exporter도 platform(mysql)에 의존한다.
-# Alertmanager는 Prometheus 알림 규칙·Slack 연동 작업이 끝나 이 차트에 포함됨(#30).
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -18,14 +15,7 @@ spec:
       valueFiles:
         - values.yaml
         # 시크릿(grafana admin, alertmanager discord webhook, kafka-exporter)은 ESO(External
-        # Secrets Operator)로 관리한다(1단계 전환 완료) — groovy/prod/observability,
-        # groovy/prod/alertmanager, groovy/prod/kafka-exporter(Secrets Manager)에서 직접
-        # 값을 가져와 동기화한다. alertmanager는 실제 Discord Webhook 값이 아직 없어 sync 실패
-        # 중일 수 있다(의도된 상태, 값 채우면 자동 정상화).
-  # 운영 서버 실제 배포 네임스페이스는 groovy-monitoring이다(2026-09-01, 어플리케이션/
-  # 모니터링 네임스페이스 분리 결정 — 멘토 피드백 반영). Grafana 관측 대상도 이 기준.
-  # groovy-application과의 상호 참조(prometheus→앱 서비스 스크레이프, mysqld/kafka-exporter→
-  # platform)는 FQDN(<svc>.<ns>.svc.cluster.local)으로 처리.
+        # Secrets Operator)로 관리한다
   destination:
     server: https://kubernetes.default.svc
     namespace: groovy-monitoring
