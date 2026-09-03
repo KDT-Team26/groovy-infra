@@ -14,9 +14,14 @@ metadata:
     app.kubernetes.io/name: argocd-cm
     app.kubernetes.io/part-of: argocd
 data:
+  # ArgoCD API(managed-resources)로 normalizedLiveState/targetState를 직접 떠서 확인한 결과,
+  # caBundle 정규화는 정상 동작했는데도 계속 OutOfSync였던 진짜 원인은 failurePolicy였다 —
+  # istiod가 자기 준비 상태에 따라 Fail(라이브)/Ignore(매니페스트 기본값)로 런타임에 직접
+  # 바꾼다(캐시 문제 아님, hard refresh로도 재현 확인).
   resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
     jqPathExpressions:
       - '.webhooks[]?.clientConfig.caBundle'
+      - '.webhooks[]?.failurePolicy'
   resource.customizations.ignoreResourceUpdates.ConfigMap: |
     jqPathExpressions:
       # Ignore the cluster-autoscaler status
