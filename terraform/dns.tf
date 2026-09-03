@@ -43,15 +43,15 @@ resource "aws_acm_certificate_validation" "api" {
   ]
 }
 
-# elbv2.k8s.aws/cluster 태그만으로는 이 클러스터의 ALB가 여러 개일 때(예: Istio ingress
-# gateway용 ALB 추가) 조회가 모호해져 apply가 깨진다. ingress.k8s.aws/stack은
-# <namespace>/<ingress 이름> 형식이라 Ingress 리소스별로 고유하므로 이것으로 특정 ALB만
-# 콕 집는다. 나중에 Istio ingress gateway로 트래픽을 전환할 때는 이 값만
-# "istio-system/istio-ingressgateway"(또는 실제 Ingress 이름)로 바꾸면 된다.
+# elbv2.k8s.aws/cluster 태그만으로는 이 클러스터에 ALB가 여러 개일 때 조회가 모호해져
+# apply가 깨진다. ingress.k8s.aws/stack은 <namespace>/<ingress 이름> 형식이라 Ingress
+# 리소스별로 고유하므로 이것으로 특정 ALB만 콕 집는다. api-gateway(Spring Cloud Gateway)를
+# Istio ingress gateway로 대체(4단계)하면서 이 값도 istio 쪽 Ingress로 바꿨다 —
+# helm/istio-gateway/templates/ingress.yaml 참고.
 data "aws_lb" "api_gateway" {
   tags = {
     "elbv2.k8s.aws/cluster" = "groovy-eks-cluster"
-    "ingress.k8s.aws/stack" = "groovy-application/api-gateway"
+    "ingress.k8s.aws/stack" = "istio-system/istio-ingressgateway"
   }
 }
 

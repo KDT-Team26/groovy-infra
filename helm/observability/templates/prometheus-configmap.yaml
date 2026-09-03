@@ -18,11 +18,6 @@ data:
 
     scrape_configs:
       # groovy-application 네임스페이스 서비스라 FQDN으로 스크레이프(2026-09-01, 네임스페이스 분리).
-      - job_name: api-gateway
-        metrics_path: /actuator/prometheus
-        static_configs:
-          - targets: ["api-gateway.groovy-application.svc.cluster.local:{{ .Values.apiGateway.managementPort }}"]
-
       - job_name: identity-service
         metrics_path: /actuator/prometheus
         static_configs:

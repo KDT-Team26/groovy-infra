@@ -303,7 +303,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (service) (\n  label_replace(\n    rate(container_cpu_usage_seconds_total{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n) * 100",
+          "expr": "sum by (service) (\n  label_replace(\n    rate(container_cpu_usage_seconds_total{namespace=\"groovy-kubernates\", pod=~\"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n) * 100",
           "interval": "",
           "intervalFactor": 2,
           "legendFormat": "{{service}}",
@@ -424,7 +424,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (service) (\n  label_replace(\n    container_memory_working_set_bytes{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"},\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n) / 1024 / 1024",
+          "expr": "sum by (service) (\n  label_replace(\n    container_memory_working_set_bytes{namespace=\"groovy-kubernates\", pod=~\"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"},\n    \"service\", \"$1\", \"pod\", \"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n) / 1024 / 1024",
           "intervalFactor": 2,
           "legendFormat": "{{service}}",
           "metric": "container_memory_usage_bytes",
@@ -544,7 +544,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (service) (\n  label_replace(\n    irate(container_network_transmit_bytes_total{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n)",
+          "expr": "sum by (service) (\n  label_replace(\n    irate(container_network_transmit_bytes_total{namespace=\"groovy-kubernates\", pod=~\"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n)",
           "intervalFactor": 2,
           "legendFormat": "{{service}}",
           "range": true,
@@ -662,7 +662,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (service) (\n  label_replace(\n    irate(container_network_receive_bytes_total{namespace=\"groovy-kubernates\", pod=~\"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n)",
+          "expr": "sum by (service) (\n  label_replace(\n    irate(container_network_receive_bytes_total{namespace=\"groovy-kubernates\", pod=~\"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"}[5m]),\n    \"service\", \"$1\", \"pod\", \"(identity-service|study-service|content-service|calendar-service|notification-service)-.+\"\n  )\n)",
           "intervalFactor": 2,
           "legendFormat": "{{service}}",
           "metric": "container_network_receive_bytes_total",
@@ -1753,7 +1753,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "process_cpu_usage{job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"}",
+          "expr": "process_cpu_usage{job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"}",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{job}}",
@@ -1867,7 +1867,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\", job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"}) / 1024 / 1024",
+          "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\", job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"}) / 1024 / 1024",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "{{job}}",
@@ -3799,7 +3799,7 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"INFO\"",
+          "expr": "{container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"INFO\"",
           "queryType": "range",
           "refId": "A",
           "datasource": {
@@ -3849,7 +3849,7 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"WARN\"",
+          "expr": "{container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"WARN\"",
           "queryType": "range",
           "refId": "A",
           "datasource": {
@@ -3897,7 +3897,7 @@
       },
       "targets": [
         {
-          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"ERROR\"",
+          "expr": "{container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"ERROR\"",
           "refId": "A",
           "datasource": {
             "type": "loki",
@@ -3946,7 +3946,7 @@
         {
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum by (level) (count_over_time({container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" [1m]))",
+          "expr": "sum by (level) (count_over_time({container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" [1m]))",
           "legendFormat": "{{level}}",
           "queryType": "range",
           "refId": "A",
@@ -4098,7 +4098,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "process_cpu_usage{job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"} * 100",
+          "expr": "process_cpu_usage{job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"} * 100",
           "legendFormat": "{{job}}",
           "range": true,
           "instant": false,
@@ -4173,7 +4173,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\", job=~\"api-gateway|identity-service|study-service|content-service|calendar-service|notification-service\"}) / 1024 / 1024",
+          "expr": "sum by (job) (jvm_memory_used_bytes{area=\"heap\", job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"}) / 1024 / 1024",
           "legendFormat": "{{job}}",
           "range": true,
           "instant": false,

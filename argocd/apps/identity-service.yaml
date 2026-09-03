@@ -25,7 +25,7 @@ spec:
         # (Secrets Manager)에서 직접 값을 가져와 동기화한다. values.yaml에 값을 넣을 필요 없음.
   # 운영 서버 실제 배포 네임스페이스는 groovy-application이다(2026-09-01, 어플리케이션/
   # 모니터링 네임스페이스 분리 결정 — 멘토 피드백 반영). platform(mysql/kafka/redis)까지
-  # 포함해 7개 Application이 여기로 통일되어야 서비스 간 short-name DNS가 계속 해석된다.
+  # 포함해 6개 Application이 여기로 통일되어야 서비스 간 short-name DNS가 계속 해석된다.
   # groovy-monitoring(observability)과의 상호 참조는 FQDN(<svc>.<ns>.svc.cluster.local)으로 처리.
   destination:
     server: https://kubernetes.default.svc

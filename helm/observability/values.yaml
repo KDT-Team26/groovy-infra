@@ -77,9 +77,7 @@ config:
   timezone: "Asia/Seoul"
 
 # prometheus-configmap.yaml의 스크레이프 대상 포트 — 각 서비스 차트가 고정으로 리스닝하는
-# 포트라 차트가 분리돼도 값이 갈라질 위험은 없다(api-gateway 차트의 동일한 스텁 값과 같은 이유).
-apiGateway:
-  managementPort: 8090
+# 포트라 차트가 분리돼도 값이 갈라질 위험은 없다.
 identityService:
   port: 8081
 studyService:
