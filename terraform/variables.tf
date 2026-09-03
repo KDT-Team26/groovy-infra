@@ -46,20 +46,20 @@ variable "node_instance_types" {
   # 2026-09-03: t3.small -> t4g.medium. 노드당 최대 파드 11 -> 17, vCPU는 동일(2)이라
   # On-Demand vCPU 할당량(16) 안에서 8대 유지 시 88 -> 136자리로 늘어 필요한 101개를 커버함.
   # t4g는 Graviton(arm64)이므로 eks.tf의 ami_type도 AL2023_ARM_64_STANDARD로 함께 변경했다.
-  # 주의: 서비스 이미지가 아직 amd64 전용이라 arm64 멀티아치 빌드가 선행돼야 파드가 뜬다.
+  # 서비스 이미지는 arm64 포함 멀티아치로 재빌드해 ECR에 푸시함(ArgoCD가 자동 배포).
 }
 
 variable "node_desired_size" {
   description = "Desired number configured on the existing EKS managed node group."
   type        = number
-  default     = 8
-  # 2026-09-02: t3.small(노드당 최대 파드 11개) 제약으로 실배포(2단계) 전체 파드(약 101개)가
-  # 못 뜨는 문제 때문에 3 -> 10으로 임시 확장 시도(ASG를 직접 조정, 노드그룹 자체가
-  # CREATE_FAILED 상태로 멈춰 있어 EKS 노드그룹 API로는 갱신이 안 돼서
-  # aws autoscaling update-auto-scaling-group으로 우회함). 계정의 On-Demand vCPU 할당량
-  # (16, t3.small 기준 8대)에 막혀 8대에서 정지 — 9번째부터 VcpuLimitExceeded로 계속 실패.
-  # 8대(88자리)로는 필요 101개에 13개 부족해 일부 파드가 Pending으로 남을 수 있음, 다음
-  # 팀 회의에서 vCPU 할당량 상향 또는 인스턴스 타입 조정 등 정식 방향 논의 예정 — 임시 조치.
+  default     = 5
+  # 2026-09-03: t4g.medium 전환(node_instance_types 변경) 이후 재계산, 여유 없는 최소값.
+  # 데몬셋을 제외한 워크로드 파드 수요는 HPA maxReplicas까지 다 찬 최악의 경우 51개,
+  # 메모리 요청 합계는 약 13.8GiB. t4g.medium 1대의 워크로드 가용량은 파드 12자리
+  # (max-pods 17에서 노드당 데몬셋 5개 제외), 메모리 약 3.1GiB(allocatable에서 데몬셋
+  # 오버헤드 제외) — 파드 수 기준 51/12≈4.3, 메모리 기준 13.8/3.1≈4.5, 두 기준 모두
+  # 충족하는 최소값은 5대(올림). 롤링 업데이트(max_unavailable=1) 여유분은 없으므로
+  # 배포 중 일시적으로 파드가 Pending될 수 있음.
 }
 
 variable "node_min_size" {
