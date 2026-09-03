@@ -1,0 +1,39 @@
+# ingress gateway(Envoy) 설치용 Application
+#
+# 리소스도 낮게 시작 (공식 기본값은 다음과 같음 100m/128Mi)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-ingressgateway
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://istio-release.storage.googleapis.com/charts
+    chart: gateway
+    targetRevision: "1.30.4"
+    helm:
+      values: |
+        replicaCount: 1
+        autoscaling:
+          enabled: false
+        service:
+          type: ClusterIP
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

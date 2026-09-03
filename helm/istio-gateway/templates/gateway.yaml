@@ -1,0 +1,18 @@
+# istio-ingressgateway(argocd/apps/istio-ingressgateway.yaml)와 같은 네임스페이스(istio-system)
+# 에 있어야 selector가 그 pod들을 찾는다. TLS는 앞단 ALB가 종료하므로 여기선 평문 HTTP(80)만
+# 다룬다 — ACM 인증서는 개인키를 못 꺼내서 Envoy가 직접 종료할 수 없다.
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: api-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - {{ .Values.istioGateway.domain | quote }}

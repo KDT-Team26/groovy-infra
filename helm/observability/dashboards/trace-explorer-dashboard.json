@@ -161,7 +161,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | traceId=\"$traceId\""
+          "expr": "{container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | traceId=\"$traceId\""
         }
       ]
     },
@@ -203,7 +203,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"INFO\""
+          "expr": "{container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"INFO\""
         }
       ]
     },
@@ -234,7 +234,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"WARN\""
+          "expr": "{container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"WARN\""
         }
       ]
     },
@@ -265,7 +265,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"ERROR\""
+          "expr": "{container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" | level=\"ERROR\""
         }
       ]
     },
@@ -347,7 +347,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum by (level) (count_over_time({container=~\".*(api-gateway|identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" [1m]))",
+          "expr": "sum by (level) (count_over_time({container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | logger_name=~\"com.groovy.backend.*\" [1m]))",
           "legendFormat": "{{level}}"
         }
       ]

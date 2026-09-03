@@ -1,0 +1,25 @@
+# Istio CRD/클러스터 롤 등 기반 리소스 설치용 ArgoCD Application
+# istiod보다 반드시 먼저 떠야 해서 sync-wave를 가장 앞에 둔다.
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-base
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  project: default
+  source:
+    repoURL: https://istio-release.storage.googleapis.com/charts
+    chart: base
+    targetRevision: "1.30.4"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
