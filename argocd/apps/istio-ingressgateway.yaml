@@ -17,6 +17,8 @@ spec:
     helm:
       values: |
         replicaCount: 1
+        autoscaling:
+          enabled: false
         service:
           type: ClusterIP
         resources:

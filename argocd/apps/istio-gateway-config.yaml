@@ -1,0 +1,24 @@
+# Istio Gateway(networking.istio.io) + ALB Ingress(istio-ingressgateway Service 대상).
+# istiod/istio-ingressgateway가 먼저 떠 있어야 하므로 sync-wave를 그 뒤로 둔다.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-gateway-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/KDT-Team26/groovy-infra.git
+    targetRevision: main
+    path: helm/istio-gateway
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

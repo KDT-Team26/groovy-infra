@@ -1,0 +1,8 @@
+# api-gateway/values.yaml의 certificateArn/domain과 동일한 값 — 같은 도메인
+# (api.groovy-team26.com)을 당분간 두 ALB(api-gateway, istio-ingressgateway)가
+# 함께 참조하는 과도기 상태. 4-7(카나리 전환) 이후 terraform/dns.tf의
+# aws_route53_record.api가 이 ALB를 가리키도록 바꾸고, 4-8에서 api-gateway 쪽을
+# 제거하면 이 값들은 istio-gateway 쪽에만 남는다.
+istioGateway:
+  certificateArn: "arn:aws:acm:ap-northeast-2:665206375378:certificate/c9b76a77-3c46-447a-a73e-81e5d05ceadc"
+  domain: "api.groovy-team26.com"
