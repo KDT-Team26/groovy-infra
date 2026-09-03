@@ -6,3 +6,6 @@
 istioGateway:
   certificateArn: "arn:aws:acm:ap-northeast-2:665206375378:certificate/c9b76a77-3c46-447a-a73e-81e5d05ceadc"
   domain: "api.groovy-team26.com"
+  # api-gateway/values.yaml의 config.corsAllowedOrigins와 동일한 값 — 원본 CorsConfig.java
+  # (CorsFilter, allowCredentials=true)를 VirtualService corsPolicy로 그대로 옮긴다.
+  corsAllowedOrigins: "http://beancp.com:5173,https://www.groovy-team26.com"

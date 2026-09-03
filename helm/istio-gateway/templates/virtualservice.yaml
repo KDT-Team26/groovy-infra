@@ -10,6 +10,10 @@
 #
 # 백엔드 서비스가 전부 groovy-application 네임스페이스에 있어서(이 차트는 istio-system) FQDN으로
 # 참조한다 — prometheus-configmap.yaml 등 이 레포의 다른 크로스 네임스페이스 참조와 동일 패턴.
+#
+# corsPolicy는 Istio가 라우트마다 개별 지정해야 해서(Spring의 "/**" 전역 필터와 달리 단일
+# 지점이 없음) 9개 라우트 전부에 _helpers.tpl의 공통 정의를 include한다 — CorsConfig.java와
+# 동일한 값(allowCredentials: true 포함).
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
@@ -29,6 +33,7 @@ spec:
             host: notification-service.groovy-application.svc.cluster.local
             port:
               number: 8085
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             regex: ^/api/auth(/.*)?$
@@ -37,6 +42,7 @@ spec:
             host: identity-service.groovy-application.svc.cluster.local
             port:
               number: 8081
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             exact: /api/users/me
@@ -45,6 +51,7 @@ spec:
             host: identity-service.groovy-application.svc.cluster.local
             port:
               number: 8081
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             regex: ^/api/studies(/.*)?$
@@ -53,6 +60,7 @@ spec:
             host: study-service.groovy-application.svc.cluster.local
             port:
               number: 8082
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             exact: /api/users/me/studies
@@ -61,6 +69,7 @@ spec:
             host: study-service.groovy-application.svc.cluster.local
             port:
               number: 8082
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             exact: /api/users/me/applications
@@ -69,6 +78,7 @@ spec:
             host: study-service.groovy-application.svc.cluster.local
             port:
               number: 8082
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             regex: ^/api/calendars(/.*)?$
@@ -77,6 +87,7 @@ spec:
             host: calendar-service.groovy-application.svc.cluster.local
             port:
               number: 8084
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             regex: ^/api/memoirs(/.*)?$
@@ -85,6 +96,7 @@ spec:
             host: content-service.groovy-application.svc.cluster.local
             port:
               number: 8083
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
     - match:
         - uri:
             regex: ^/api/tags(/.*)?$
@@ -93,3 +105,4 @@ spec:
             host: identity-service.groovy-application.svc.cluster.local
             port:
               number: 8081
+      {{- include "istio-gateway.corsPolicy" . | nindent 6 }}
