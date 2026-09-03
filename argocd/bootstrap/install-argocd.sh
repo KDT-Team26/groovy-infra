@@ -1,24 +1,4 @@
 #!/usr/bin/env bash
-# GitOps 빌드 지시서 Phase 05 — ArgoCD를 설치하고 최소 설정까지 마치는 부트스트랩 스크립트.
-# kubectl이 이미 대상 클러스터를 가리키고 있는 상태로 이 스크립트를 실행한다(레포를 clone한
-# 뒤 argocd/bootstrap/에서 실행).
-#
-# 한 번에 쭉 실행해도 되고, 아래 STEP 단위로 잘라서 손으로 하나씩 실행해도 된다 — 전부
-# 멱등성 있게 짰다(이미 존재하는 리소스는 그대로 두거나 최신 내용으로 갱신만 함, 삭제 없음).
-#
-# 미리 알아둘 것:
-#   - 팀 결정(2026-09-01): 잦은 배포가 없는 서비스 특성상 non-HA(단일 인스턴스) 설치를 쓴다.
-#     한 차례 HA(ha/install.yaml)로 설치해봤으나 노드(t3.small, 노드당 최대 파드 11개)가
-#     감당 못 해 되돌렸다 — HA로 다시 가려면 노드 스펙 상향이 선행되어야 한다.
-#   - 시크릿은 Sealed Secrets가 아니라 ESO(External Secrets Operator)로 관리한다 — 이
-#     스크립트는 ESO를 설치하지 않는다(1단계에서 이미 설치·검증 완료, argocd/bootstrap/
-#     external-secrets-clustersecretstore.yaml 참고). 이 클러스터에 ESO가 없으면 STEP 5보다
-#     먼저 별도로 설치해야 한다 — 안 그러면 SealedSecret 대신 ExternalSecret CRD가 없다는
-#     이유로 root-app 적용 후 여러 Application이 sync 실패로 보인다.
-#   - root-app.yaml은 groovy-infra의 main 브랜치를 본다. 이 스크립트를 돌리는 시점에 아직
-#     관련 작업이 main에 병합되기 전이라면, STEP 5 적용 직후 Application들이 실패로 보여도
-#     정상이다 — main 병합이 끝나면 다음 폴링(기본 3분) 때 저절로 정상화된다.
-#   - Ingress는 이번 목표에서 제외됐다. 그래서 UI 접근은 port-forward로 안내한다(STEP 6).
 
 set -euo pipefail
 
@@ -34,10 +14,7 @@ kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
 echo
 echo "[2/6] ArgoCD 코어 설치 (stable 채널, non-HA)"
-# --server-side 필수: applicationsets.argoproj.io CRD가 커서 기본(client-side) apply로는
-# "metadata.annotations: Too long"(last-applied-configuration이 256KB 제한 초과) 에러가 난다.
-# --force-conflicts는 이 명령을 재실행하거나 위 CRD들을 이미 client-side로 만들어본 적 있을 때
-# 소유권 충돌 없이 서버사이드 관리로 넘어오게 한다.
+
 kubectl apply --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 echo
@@ -49,6 +26,13 @@ echo "[3/6] RBAC 정책 적용 (argocd-rbac-cm.yaml — 기본 role:readonly)"
 kubectl apply -n argocd -f "${BOOTSTRAP_DIR}/argocd-rbac-cm.yaml"
 # ConfigMap은 재시작해야 argocd-server가 다시 읽는다.
 kubectl rollout restart deployment argocd-server -n argocd
+kubectl rollout status deployment argocd-server -n argocd --timeout=120s
+
+echo
+echo "[3.5/6] 전역 설정 적용 (argocd-cm.yaml — Istio webhook caBundle 등 ignoreDifferences, #157)"
+kubectl apply -n argocd -f "${BOOTSTRAP_DIR}/argocd-cm.yaml"
+kubectl rollout restart deployment argocd-server -n argocd
+kubectl rollout restart statefulset argocd-application-controller -n argocd
 kubectl rollout status deployment argocd-server -n argocd --timeout=120s
 
 echo
