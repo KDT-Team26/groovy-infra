@@ -37,6 +37,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
+  # istiod가 기동하면서 istiod-default-validator 웹훅의 caBundle을 런타임에 직접 주입한다
+  # 그래서 ArgoCD가 달라졌다고 판단을 하고 계속 싱크를 맞춰버림 (무한 알림 문제 유발)
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jqPathExpressions:
+        - '.webhooks[]?.clientConfig.caBundle'
   syncPolicy:
     automated:
       prune: true
