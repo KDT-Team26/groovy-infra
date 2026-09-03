@@ -42,7 +42,11 @@ variable "cluster_version" {
 variable "node_instance_types" {
   description = "Current EKS managed node group instance type."
   type        = list(string)
-  default     = ["t3.small"]
+  default     = ["t4g.medium"]
+  # 2026-09-03: t3.small -> t4g.medium. 노드당 최대 파드 11 -> 17, vCPU는 동일(2)이라
+  # On-Demand vCPU 할당량(16) 안에서 8대 유지 시 88 -> 136자리로 늘어 필요한 101개를 커버함.
+  # t4g는 Graviton(arm64)이므로 eks.tf의 ami_type도 AL2023_ARM_64_STANDARD로 함께 변경했다.
+  # 주의: 서비스 이미지가 아직 amd64 전용이라 arm64 멀티아치 빌드가 선행돼야 파드가 뜬다.
 }
 
 variable "node_desired_size" {
