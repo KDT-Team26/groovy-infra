@@ -69,3 +69,8 @@ variable "node_max_size" {
   type        = number
   default     = 8
 }
+variable "domain_name" {
+  description = "Registered public domain used by the Groovy platform."
+  type        = string
+  default     = "groovy-team26.com"
+}
