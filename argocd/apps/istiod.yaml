@@ -1,0 +1,42 @@
+# Istio 4단계(A안: ingress-only) — 컨트롤 플레인(istiod).
+# 기본 리소스 프로파일(request 2048Mi)은 t3.small 노드 allocatable(1434Mi)보다 커서
+# 그대로 쓰면 스케줄 자체가 안 된다. 사전 계측 전까지는 낮게 시작 -> 실사용량 보고
+# 조정하는 원칙(4-1)에 따라 아래처럼 축소한다. replica/autoscale도 지금 규모(6개
+# 서비스)엔 불필요해 1개 고정 — istiod를 여러 개 띄우는 것 자체가 baseline 메모리를
+# 그만큼 더 먹는 선택이라 오히려 지금 상황에 역효과.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istiod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  source:
+    repoURL: https://istio-release.storage.googleapis.com/charts
+    chart: istiod
+    targetRevision: "1.30.4"
+    helm:
+      values: |
+        replicaCount: 1
+        autoscaleEnabled: false
+        pilot:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+        global:
+          istioNamespace: istio-system
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
