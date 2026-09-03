@@ -50,6 +50,11 @@ apiGateway:
     maxReplicas: 2
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
+  # api-gateway-ingress.yaml(ALB)이 참조하는 값. values.yaml에 이 두 값이 없으면 Ingress가
+  # 빈 certificate-arn/host로 렌더링되어, 팀원이 수동으로 kubectl apply해둔 현재 라이브
+  # Ingress(동일한 값 하드코딩됨)를 깨뜨린다 — PR #143/#144 merge 시점에 발견해서 채워넣음.
+  certificateArn: "arn:aws:acm:ap-northeast-2:665206375378:certificate/c9b76a77-3c46-447a-a73e-81e5d05ceadc"
+  domain: "api.groovy-team26.com"
 
 # api-gateway-configmap.yaml이 각 서비스의 ClusterIP DNS 이름(서비스명은 각 서비스 차트가
 # Service 리소스명으로 고정하므로 안 바뀐다)과 포트를 조합해 라우팅 대상 URL을 만든다.
