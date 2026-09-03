@@ -2,7 +2,7 @@ studyService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
     repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-study-service
-    tag: "ccf90e9ddc461bb2d531a27e8e2fe449bce3031d"
+    tag: "7e33e38b1b075ebb4dcde3cf2903fe4585f15889"
     pullPolicy: IfNotPresent
   port: 8082
   # 롤아웃 안전장치 + health probe(#90) — 상세 설명은 identity-service/values.yaml 참고.

@@ -4,7 +4,7 @@ apiGateway:
     # ECR 저장소명은 groovy-gateway-service(서비스 레포명과 동일)로 생성됐다 —
     # 차트/values 키 이름은 api-gateway/apiGateway를 그대로 쓰지만 이미지 리포지토리명만 다르다.
     repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-gateway-service
-    tag: "8f81df2f1f984dd7aec2bf7889179236f2942158"
+    tag: "63feaaf3e8903f15837e883b121522d660075405"
     pullPolicy: IfNotPresent
   port: 8080
   managementPort: 8090 # actuator port로 새로 하나 만들었습니다. - 변
@@ -68,4 +68,4 @@ notificationService:
   port: 8085
 
 config:
-  corsAllowedOrigins: "http://beancp.com:5173"
+  corsAllowedOrigins: "http://beancp.com:5173,https://www.groovy-team26.com"
