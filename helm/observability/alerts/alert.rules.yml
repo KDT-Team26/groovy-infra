@@ -33,7 +33,7 @@ groups:
     rules:
     # 새 이미지가 Pod 를 못 띄우는 경우 — probe 실패로 컨테이너가 반복 재시작.
     - alert: BackendPodCrashLooping
-      expr: increase(kube_pod_container_status_restarts_total{namespace="groovy-kubernates"}[10m]) > 3
+      expr: increase(kube_pod_container_status_restarts_total{namespace="groovy-application"}[10m]) > 3
       for: 5m
       labels:
         severity: critical
