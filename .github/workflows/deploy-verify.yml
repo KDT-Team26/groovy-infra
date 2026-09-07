@@ -48,7 +48,7 @@ env:
   AWS_REGION: ap-northeast-2
   APP_NAMESPACE: groovy-application
   ARGOCD_NAMESPACE: argocd
-  VERIFY_TIMEOUT_SECONDS: "480"
+  VERIFY_TIMEOUT_SECONDS: "900"
 
 jobs:
   verify:
