@@ -1,0 +1,231 @@
+# 자동 롤백(auto-rollback P5) — 배포 검증 → last-good 마킹 → (실패 시) 자동 롤백
+#
+# 트리거:
+#   - repository_dispatch(type=deploy-verify): 서비스 레포 CI 가 배포 후 호출 (mode=auto)
+#   - workflow_dispatch: 사람이 직접 실행 (mode=manual)
+#
+# 안전장치:
+#   - 킬 스위치   : vars.AUTO_ROLLBACK_ENABLED == 'true' 여야 auto 롤백. 아니면 detect-only.
+#   - 화이트리스트: vars.AUTO_ROLLBACK_SERVICES 에 있는 서비스만.
+#   - 루프 차단   : 대상 커밋이 revert(...) 면 롤백 안 함. auto 는 봇 이미지 bump 커밋만.
+#   - 서킷 브레이커: 최근 6h revert 과다 시 중단.
+#   - 크로스체크  : 이전 RS 생존 / 공유 의존성 health / 클러스터 알림 → 배포 무관 장애면 abstain.
+#   - 불확실 시   : verify=timeout/inconclusive → 롤백 안 함, 알림만.
+
+name: Verify deploy & auto-rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 검증할 서비스
+        required: true
+        type: choice
+        options:
+          - identity-service
+          - study-service
+          - calendar-service
+          - content-service
+          - notification-service
+      infra_sha:
+        description: 검증할 groovy-infra 커밋 SHA. 비우면 현재 main HEAD.
+        required: false
+        type: string
+  repository_dispatch:
+    types: [deploy-verify]
+
+permissions:
+  contents: write   # last-good 태그 push / 롤백 커밋
+  id-token: write   # OIDC (EKS/ECR read-only)
+
+concurrency:
+  # 같은 서비스의 검증/롤백은 직렬화. 새 배포가 들어오면 그 배포의 verify 가 이어서 판단.
+  group: deploy-verify-${{ github.event.client_payload.service || inputs.service }}
+  cancel-in-progress: false
+
+env:
+  CLUSTER_NAME: groovy-eks-cluster
+  AWS_REGION: ap-northeast-2
+  APP_NAMESPACE: groovy-application
+  ARGOCD_NAMESPACE: argocd
+  VERIFY_TIMEOUT_SECONDS: "480"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout groovy-infra main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Normalize inputs
+        id: in
+        env:
+          EVT: ${{ github.event_name }}
+          WD_SERVICE: ${{ inputs.service }}
+          WD_SHA: ${{ inputs.infra_sha }}
+          RD_SERVICE: ${{ github.event.client_payload.service }}
+          RD_SHA: ${{ github.event.client_payload.infra_sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVT" = "repository_dispatch" ]; then
+            MODE=auto;   SVC="$RD_SERVICE"; SHA="$RD_SHA"
+          else
+            MODE=manual; SVC="$WD_SERVICE"; SHA="$WD_SHA"
+          fi
+          case "$SVC" in
+            identity-service|study-service|calendar-service|content-service|notification-service) : ;;
+            *) echo "::error::service 값이 올바르지 않습니다: '$SVC'"; exit 1 ;;
+          esac
+          [ -n "$SHA" ] || SHA="$(git rev-parse HEAD)"
+          printf '%s' "$SHA" | grep -qE '^[0-9a-f]{7,40}$' || { echo "::error::infra_sha 형식 오류: '$SHA'"; exit 1; }
+          # 짧은 SHA 로 왔으면 풀 SHA 로 정규화 (git 이력에 있어야 함)
+          SHA="$(git rev-parse "$SHA")"
+          {
+            echo "mode=$MODE"
+            echo "service=$SVC"
+            echo "infra_sha=$SHA"
+          } >> "$GITHUB_OUTPUT"
+          echo "mode=$MODE service=$SVC infra_sha=$SHA"
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::665206375378:role/groovy-github-actions-eks-readonly
+          aws-region: ap-northeast-2
+
+      - name: Setup kubectl
+        run: |
+          set -euo pipefail
+          curl -sSLO "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION"
+
+      # ---- 1) 배포 health 판정 ----
+      - name: Verify ArgoCD sync + health
+        id: health
+        env:
+          SERVICE: ${{ steps.in.outputs.service }}
+          EXPECT_SHA: ${{ steps.in.outputs.infra_sha }}
+        run: bash .github/scripts/verify-deploy.sh
+
+      - name: Mark last-good
+        if: steps.health.outputs.result == 'healthy'
+        env:
+          SERVICE: ${{ steps.in.outputs.service }}
+          SHA: ${{ steps.in.outputs.infra_sha }}
+        run: |
+          set -euo pipefail
+          git config user.name  "deploy-verify-bot"
+          git config user.email "deploy-verify-bot@users.noreply.github.com"
+          git tag -f "last-good/${SERVICE}" "$SHA"
+          git push -f origin "refs/tags/last-good/${SERVICE}"
+          echo "last-good/${SERVICE} → ${SHA}"
+
+      # ---- 2) 롤백 여부 판단 (가드 + 크로스체크) ----
+      - name: Decide rollback
+        id: guard
+        if: steps.health.outputs.result != 'healthy'
+        env:
+          SERVICE: ${{ steps.in.outputs.service }}
+          INFRA_SHA: ${{ steps.in.outputs.infra_sha }}
+          MODE: ${{ steps.in.outputs.mode }}
+          RESULT: ${{ steps.health.outputs.result }}
+          AUTO_ENABLED: ${{ vars.AUTO_ROLLBACK_ENABLED }}
+          AUTO_SERVICES: ${{ vars.AUTO_ROLLBACK_SERVICES }}
+        run: bash .github/scripts/rollback-guards.sh
+
+      # ---- 3) 자동 롤백 실행 ----
+      - name: Roll back to last-good
+        id: rb
+        if: steps.guard.outputs.decision == 'rollback'
+        uses: ./.github/actions/rollback-core
+        with:
+          service: ${{ steps.in.outputs.service }}
+          to_sha: ""   # 비우면 last-good/<service> 태그 사용
+          reason: "auto-rollback: ${{ steps.guard.outputs.reason }} (bad infra_sha=${{ steps.in.outputs.infra_sha }})"
+          dry_run: "false"
+          actor: "deploy-verify.yml (${{ steps.in.outputs.mode }})"
+
+      # ---- 4) 롤백 후 재검증 ----
+      - name: Re-verify after rollback
+        id: reverify
+        if: steps.rb.outputs.committed == 'true'
+        env:
+          SERVICE: ${{ steps.in.outputs.service }}
+        run: |
+          set -euo pipefail
+          # rollback-core 가 push 한 revert 커밋을 ArgoCD 가 배포하고 Healthy 가 되는지 재검증
+          export EXPECT_SHA="$(git rev-parse HEAD)"
+          bash .github/scripts/verify-deploy.sh
+
+      # ---- 5) 리포트 ----
+      - name: Summary & Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MODE: ${{ steps.in.outputs.mode }}
+          SERVICE: ${{ steps.in.outputs.service }}
+          INFRA_SHA: ${{ steps.in.outputs.infra_sha }}
+          VERIFY: ${{ steps.health.outputs.result }}
+          DECISION: ${{ steps.guard.outputs.decision }}
+          GUARD_REASON: ${{ steps.guard.outputs.reason }}
+          RB_COMMITTED: ${{ steps.rb.outputs.committed }}
+          RB_TARGET: ${{ steps.rb.outputs.target }}
+          REVERIFY: ${{ steps.reverify.outputs.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -uo pipefail
+          # 상태 → 사람이 읽을 한 줄
+          if [ "$VERIFY" = "healthy" ]; then
+            LINE="✅ **${SERVICE}** 배포 검증 통과 — last-good=\`${INFRA_SHA:0:12}\`"
+          elif [ "${RB_COMMITTED:-}" = "true" ] && [ "${REVERIFY:-}" = "healthy" ]; then
+            LINE="↩️ **${SERVICE}** 자동 롤백 완료 → \`${RB_TARGET:0:12}\` 로 복귀, Healthy. (원인 infra=\`${INFRA_SHA:0:12}\`)"
+          elif [ "${RB_COMMITTED:-}" = "true" ]; then
+            LINE="🚨 **${SERVICE}** 자동 롤백 push 했으나 재검증 실패(result=\`${REVERIFY:-error}\`) — @here 수동 개입 필요"
+          elif [ "${DECISION:-}" = "circuit_break" ]; then
+            LINE="🚨 **${SERVICE}** 서킷 브레이커 발동 — ${GUARD_REASON}"
+          elif [ "${DECISION:-}" = "rollback" ]; then
+            LINE="🚨 **${SERVICE}** 롤백 실행 단계에서 실패 — 로그 확인 필요"
+          else
+            LINE="⚠️ **${SERVICE}** 배포 검증 실패(verify=\`${VERIFY:-error}\`) — 롤백 안 함: ${GUARD_REASON:-사유 미상}"
+          fi
+          {
+            echo "### deploy-verify (${MODE})"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| service | \`${SERVICE}\` |"
+            echo "| infra_sha | \`${INFRA_SHA}\` |"
+            echo "| verify | \`${VERIFY:-error}\` |"
+            echo "| decision | \`${DECISION:-n/a}\` |"
+            echo "| guard reason | ${GUARD_REASON:-} |"
+            echo "| rollback committed | \`${RB_COMMITTED:-false}\` |"
+            echo "| re-verify | \`${REVERIFY:-n/a}\` |"
+            echo ""
+            echo "$LINE"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+            curl -sS -H 'Content-Type: application/json' -X POST "$DISCORD_WEBHOOK_URL" \
+              -d "{\"content\": \"${LINE}\n${RUN_URL}\"}" || true
+          else
+            echo "DISCORD_WEBHOOK_URL 미설정 — Discord 알림 skip"
+          fi
+
+      - name: Fail job on unresolved failure
+        if: always()
+        env:
+          VERIFY: ${{ steps.health.outputs.result }}
+          RB_COMMITTED: ${{ steps.rb.outputs.committed }}
+          REVERIFY: ${{ steps.reverify.outputs.result }}
+        run: |
+          # healthy 이거나, 롤백 후 재검증까지 healthy 면 성공. 그 외엔 job 을 실패로 남겨 가시화.
+          if [ "$VERIFY" = "healthy" ]; then exit 0; fi
+          if [ "${RB_COMMITTED:-}" = "true" ] && [ "${REVERIFY:-}" = "healthy" ]; then exit 0; fi
+          echo "::error::배포가 정상화되지 않았습니다 (verify=${VERIFY:-error}, rollback=${RB_COMMITTED:-false}, re-verify=${REVERIFY:-n/a})"
+          exit 1
