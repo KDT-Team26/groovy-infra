@@ -23,15 +23,17 @@ data:
             "content": "✅ **{{.app.metadata.name}}** sync 성공\n- Revision: `{{.app.status.sync.revision}}`\n- Sync Status: `{{.app.status.sync.status}}`\n- Health: `{{.app.status.health.status}}`"
           }
 
-  # 반자동 롤백: sync 실패/health Degraded
-  # 디스코드 알림에 "직전 배포 revision"과 "롤백 실행 방법"을 전송
+  # 롤백 알림: sync 실패 / health Degraded
+  # 주의: status.history[].revision 은 groovy-infra 커밋 SHA(= ArgoCD targetRevision)이지
+  #       이미지 태그(서비스 레포 SHA)가 아니다. 그래서 to_sha 로 쓰지 말고 비워둘 것 —
+  #       rollback-core 가 last-good/<service> 태그로 마지막 Healthy 이미지를 찾아 복귀한다.
   template.app-sync-failed: |
     webhook:
       discord:
         method: POST
         body: |
           {
-            "content": "❌ **{{.app.metadata.name}}** sync 실패\n- Sync Status: `{{.app.status.sync.status}}`\n- 현재 revision: `{{.app.status.sync.revision}}`\n- 직전 배포 revision: `{{- if gt (len .app.status.history) 1 }}{{ (index .app.status.history (sub (len .app.status.history) 2)).revision }}{{- else }}조회 불가{{- end }}`\n- Message: {{.app.status.operationState.message | toJson}}\n\n**롤백**: groovy-infra → Actions → `Rollback service image tag` 실행 (service=`{{.app.metadata.name}}`, to_sha 는 위 '직전 배포 revision' 또는 비워두면 자동)"
+            "content": "❌ **{{.app.metadata.name}}** sync 실패\n- Sync Status: `{{.app.status.sync.status}}`\n- 현재 infra revision: `{{.app.status.sync.revision}}`\n- 직전 배포 infra 커밋: `{{- if gt (len .app.status.history) 1 }}{{ (index .app.status.history (sub (len .app.status.history) 2)).revision }}{{- else }}조회 불가{{- end }}`\n- Message: {{.app.status.operationState.message | toJson}}\n\n**롤백**: groovy-infra → Actions → `Rollback service image tag` (service=`{{.app.metadata.name}}`, to_sha 는 비워두면 last-good 태그로 자동). 자동 롤백이 켜진 서비스는 deploy-verify 가 먼저 시도한다."
           }
 
   template.app-health-degraded: |
@@ -40,7 +42,7 @@ data:
         method: POST
         body: |
           {
-            "content": "⚠️ **{{.app.metadata.name}}** health Degraded\n- Health Status: `{{.app.status.health.status}}`\n- Sync Status: `{{.app.status.sync.status}}`\n- 현재 revision: `{{.app.status.sync.revision}}`\n- 직전 배포 revision: `{{- if gt (len .app.status.history) 1 }}{{ (index .app.status.history (sub (len .app.status.history) 2)).revision }}{{- else }}조회 불가{{- end }}`\n\n**롤백**: groovy-infra → Actions → `Rollback service image tag` 실행 (service=`{{.app.metadata.name}}`, to_sha 는 위 '직전 배포 revision' 또는 비워두면 자동)"
+            "content": "⚠️ **{{.app.metadata.name}}** health Degraded\n- Health Status: `{{.app.status.health.status}}`\n- Sync Status: `{{.app.status.sync.status}}`\n- 현재 infra revision: `{{.app.status.sync.revision}}`\n\n**롤백**: groovy-infra → Actions → `Rollback service image tag` (service=`{{.app.metadata.name}}`, to_sha 는 비워두면 last-good 태그로 자동). 자동 롤백이 켜진 서비스는 deploy-verify 가 먼저 시도한다."
           }
 
   trigger.on-sync-succeeded: |

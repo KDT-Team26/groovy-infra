@@ -1,0 +1,137 @@
+# 자동 롤백(auto-rollback P4) — 배포 검증 + last-good 태그 마킹
+#
+# P4(현재): workflow_dispatch 로만 실행. 배포가 Healthy 로 확인되면 last-good/<service> 태그를
+#           해당 infra 커밋으로 갱신한다. 실패해도 롤백은 하지 않는다(알림만).
+# P5(다음): repository_dispatch 트리거 + 가드/크로스체크 + 실패 시 rollback-core 호출.
+
+name: Verify deploy & mark last-good
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 검증할 서비스
+        required: true
+        type: choice
+        options:
+          - identity-service
+          - study-service
+          - calendar-service
+          - content-service
+          - notification-service
+      infra_sha:
+        description: 검증할 groovy-infra 커밋 SHA. 비우면 현재 main HEAD.
+        required: false
+        type: string
+
+permissions:
+  contents: write   # last-good/<service> 태그 push
+  id-token: write   # OIDC (EKS/ECR read-only)
+
+concurrency:
+  group: deploy-verify-${{ inputs.service }}
+  cancel-in-progress: false
+
+env:
+  CLUSTER_NAME: groovy-eks-cluster
+  AWS_REGION: ap-northeast-2
+  APP_NAMESPACE: groovy-application
+  ARGOCD_NAMESPACE: argocd
+  VERIFY_TIMEOUT_SECONDS: "480"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout groovy-infra main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Resolve infra_sha
+        id: rev
+        env:
+          IN_SHA: ${{ inputs.infra_sha }}
+        run: |
+          set -euo pipefail
+          SHA="${IN_SHA:-$(git rev-parse HEAD)}"
+          printf '%s' "$SHA" | grep -qE '^[0-9a-f]{7,40}$' || { echo "::error::infra_sha 형식 오류: '$SHA'"; exit 1; }
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::665206375378:role/groovy-github-actions-eks-readonly
+          aws-region: ap-northeast-2
+
+      - name: Setup kubectl
+        run: |
+          set -euo pipefail
+          curl -sSLO "https://dl.k8s.io/release/$(curl -sSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo install -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client=true -o json | jq -r '.clientVersion.gitVersion'
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION"
+
+      - name: Verify ArgoCD sync + health
+        id: health
+        env:
+          SERVICE: ${{ inputs.service }}
+          EXPECT_SHA: ${{ steps.rev.outputs.sha }}
+        run: bash .github/scripts/verify-deploy.sh
+
+      - name: Mark last-good
+        if: steps.health.outputs.result == 'healthy'
+        env:
+          SERVICE: ${{ inputs.service }}
+          SHA: ${{ steps.rev.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git config user.name  "deploy-verify-bot"
+          git config user.email "deploy-verify-bot@users.noreply.github.com"
+          git tag -f "last-good/${SERVICE}" "$SHA"
+          git push -f origin "refs/tags/last-good/${SERVICE}"
+          echo "last-good/${SERVICE} → ${SHA}"
+
+      - name: Summary
+        if: always()
+        env:
+          RESULT: ${{ steps.health.outputs.result }}
+          SERVICE: ${{ inputs.service }}
+          SHA: ${{ steps.rev.outputs.sha }}
+        run: |
+          {
+            echo "### deploy-verify: \`${SERVICE}\`"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| infra_sha | \`${SHA}\` |"
+            echo "| result | \`${RESULT:-error}\` |"
+            echo ""
+            case "${RESULT:-error}" in
+              healthy)      echo "> last-good 태그 갱신됨." ;;
+              degraded)     echo "> 배포 실패로 확정. (P5부터는 여기서 자동 롤백)" ;;
+              timeout)      echo "> 제한 시간 내 판정 불가 — 수동 확인 필요." ;;
+              inconclusive) echo "> 클러스터/ArgoCD 조회 실패 — 판정 불가, 롤백 안 함. 수동 확인." ;;
+              *)            echo "> 오류 — 로그 확인." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Notify Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          RESULT: ${{ steps.health.outputs.result }}
+          SERVICE: ${{ inputs.service }}
+          SHA: ${{ steps.rev.outputs.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -n "${DISCORD_WEBHOOK_URL:-}" ] || { echo "DISCORD_WEBHOOK_URL 미설정 — skip"; exit 0; }
+          if [ "${RESULT:-}" = "healthy" ]; then
+            MSG="✅ **${SERVICE}** 배포 검증 통과 — last-good=\`${SHA:0:12}\`"
+          else
+            MSG="⚠️ **${SERVICE}** 배포 검증 실패 (result=\`${RESULT:-error}\`, infra=\`${SHA:0:12}\`) — 수동 확인: ${RUN_URL}"
+          fi
+          curl -sS -H 'Content-Type: application/json' -X POST "$DISCORD_WEBHOOK_URL" -d "{\"content\": \"${MSG}\"}"
