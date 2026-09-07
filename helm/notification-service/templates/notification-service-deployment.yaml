@@ -7,6 +7,8 @@ metadata:
 spec:
   # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
   revisionHistoryLimit: {{ .Values.notificationService.rollout.revisionHistoryLimit }}
+  # 자동 롤백(auto-rollback P1c): 감지 단축용. 값 근거는 values.yaml 주석 참고.
+  progressDeadlineSeconds: {{ .Values.notificationService.rollout.progressDeadlineSeconds }}
   strategy:
     type: RollingUpdate
     rollingUpdate:

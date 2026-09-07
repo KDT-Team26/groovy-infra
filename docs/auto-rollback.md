@@ -13,7 +13,7 @@
 
 | 파일 | 역할 |
 |---|---|
-| `helm/<svc>/values.yaml`, `*-deployment.yaml` | probe(startup=`/actuator/health`, readiness=`/actuator/health/readiness`, liveness=`/actuator/health/liveness`), `progressDeadlineSeconds: 180`, `revisionHistoryLimit`, `maxUnavailable:0`/`maxSurge:1` |
+| `helm/<svc>/values.yaml`, `*-deployment.yaml` | probe(startup=`/actuator/health`, readiness=`/actuator/health/readiness`, liveness=`/actuator/health/liveness`), `progressDeadlineSeconds: 240`, `startup.failureThreshold: 18`(예산 180s), `revisionHistoryLimit`, `maxUnavailable:0`/`maxSurge:1` |
 | `.github/actions/rollback-core/` | 롤백 코어 로직(대상 해석→치환→helm 렌더 검증→rebase-safe push). 수동/자동이 공유 |
 | `.github/workflows/rollback.yml` | 수동(`workflow_dispatch`) 롤백. 사람이 실행한 것 = main 직접 push 승인 |
 | `.github/workflows/deploy-verify.yml` | 배포 검증 + last-good 마킹 + (실패 시) 자동 롤백. `repository_dispatch`/`workflow_dispatch` |
@@ -125,8 +125,9 @@ ArgoCD Discord 알림이 동작한다(`argocd-notifications-secret.yaml`).
 ## 6. 참고 — 이전 수동 수정 내역 (#90~#94)
 
 - **#90 probe**: 7개 차트에 startup/readiness/liveness probe + `maxUnavailable:0`/`maxSurge:1`
-  + `revisionHistoryLimit:5` + `pullPolicy` 명시. (auto-rollback P1 에서 probe 를
-  liveness/readiness 그룹으로 분리, `progressDeadlineSeconds:180` 추가.)
+  + `revisionHistoryLimit:5` + `pullPolicy` 명시. (auto-rollback P1 재작업(2026-09-07)에서 각 서비스 SecurityConfig 에 `/actuator/health/**`
+  permit 선배포 후 probe 를 liveness/readiness 그룹으로 분리, `progressDeadlineSeconds:240` /
+  `startup.failureThreshold:18` 적용 — 근거 `auto-rollback-coldstart-measurements.md`.)
 - **#91 HA**: `values-ha.yaml`(replica 2 / HPA minReplicas 2), PDB, topologySpread. 현재
   identity/study/content/calendar/notification 5개 서비스에서 활성.
 - **#92 알림**: ArgoCD sync 실패/Degraded 알림에 직전 배포 커밋 + 롤백 방법, `oncePer` 중복 억제.

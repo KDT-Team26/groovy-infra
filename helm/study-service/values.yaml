@@ -2,7 +2,7 @@ studyService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
     repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-study-service
-    tag: "e003d3833da1a1bbc7210a8fd33c41d5aa0ab314"
+    tag: "77be2ec04d79d715635feb5954cdb0660f6bc362"
     pullPolicy: IfNotPresent
   port: 8082
   # 롤아웃 안전장치 + health probe(#90) — 상세 설명은 identity-service/values.yaml 참고.
@@ -10,19 +10,25 @@ studyService:
     revisionHistoryLimit: 5
     maxUnavailable: 0
     maxSurge: 1
+    # 자동 롤백(auto-rollback P1c): 감지 단축. 값 근거는
+    # docs/auto-rollback-coldstart-measurements.md (실측 콜드스타트 17~85s).
+    progressDeadlineSeconds: 240
   probes:
     enabled: true
     startup:
       httpGet: { path: /actuator/health, port: 8082 }
       periodSeconds: 10
-      failureThreshold: 30
+      failureThreshold: 18
     readiness:
-      httpGet: { path: /actuator/health, port: 8082 }
+      # 자동 롤백(auto-rollback P1c): readiness 그룹만 — 외부 의존성 블립이 롤아웃/오탐 롤백을
+      # 유발하지 않게.
+      httpGet: { path: /actuator/health/readiness, port: 8082 }
       periodSeconds: 10
       failureThreshold: 3
       timeoutSeconds: 3
     liveness:
-      httpGet: { path: /actuator/health, port: 8082 }
+      # liveness 그룹만(프로세스 생존).
+      httpGet: { path: /actuator/health/liveness, port: 8082 }
       periodSeconds: 20
       failureThreshold: 3
       timeoutSeconds: 3
