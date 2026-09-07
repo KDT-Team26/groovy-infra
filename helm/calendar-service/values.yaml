@@ -24,8 +24,8 @@ calendarService:
     liveness:
       httpGet: { path: /actuator/health, port: 8084 }
       periodSeconds: 20
-      failureThreshold: 3
-      timeoutSeconds: 3
+      failureThreshold: 15
+      timeoutSeconds: 10
   # HA 프로파일(#91) — 상세 설명은 identity-service/values.yaml 참고.
   pdb:
     enabled: false

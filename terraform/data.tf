@@ -29,9 +29,9 @@ resource "aws_db_instance" "mysql" {
 
   publicly_accessible     = false
   multi_az                = false
-  deletion_protection     = false
+  deletion_protection     = true
   backup_retention_period = 1
-  skip_final_snapshot     = true
+  skip_final_snapshot     = false
 
   lifecycle {
     ignore_changes = [
