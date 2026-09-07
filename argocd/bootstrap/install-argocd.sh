@@ -36,6 +36,11 @@ kubectl rollout restart statefulset argocd-application-controller -n argocd
 kubectl rollout status deployment argocd-server -n argocd --timeout=120s
 
 echo
+echo "[3.6/6] 자동 롤백 read-only RBAC 적용 (ci-readonly-rbac.yaml — group=groovy-ci-readonly)"
+# EKS 액세스 항목(terraform/github-actions-eks.tf)이 IAM 역할을 이 그룹으로 매핑한다.
+kubectl apply -f "${BOOTSTRAP_DIR}/ci-readonly-rbac.yaml"
+
+echo
 echo "[4/6] 초기 admin 비밀번호 (최초 로그인 후 반드시 변경할 것: argocd account update-password)"
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath='{.data.password}' | base64 -d
