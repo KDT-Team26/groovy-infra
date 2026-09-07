@@ -12,21 +12,27 @@ identityService:
     revisionHistoryLimit: 5
     maxUnavailable: 0
     maxSurge: 1
+    # 자동 롤백(auto-rollback P1c): 감지 단축. 값 근거는
+    # docs/auto-rollback-coldstart-measurements.md (실측 콜드스타트 17~85s).
+    progressDeadlineSeconds: 240
   # health probe(#90). 각 probe 는 완결된 k8s probe 스펙이라 템플릿은 toYaml 로 그대로 렌더.
-  # startup.failureThreshold * periodSeconds = 최대 허용 기동시간(여기선 300s).
+  # startup.failureThreshold * periodSeconds = 최대 허용 기동시간(여기선 180s).
   probes:
     enabled: true
     startup:
       httpGet: { path: /actuator/health, port: 8081 }
       periodSeconds: 10
-      failureThreshold: 30
+      failureThreshold: 18
     readiness:
-      httpGet: { path: /actuator/health, port: 8081 }
+      # 자동 롤백(auto-rollback P1c): readiness 그룹만 — 외부 의존성 블립이 롤아웃/오탐 롤백을
+      # 유발하지 않게.
+      httpGet: { path: /actuator/health/readiness, port: 8081 }
       periodSeconds: 10
       failureThreshold: 3
       timeoutSeconds: 3
     liveness:
-      httpGet: { path: /actuator/health, port: 8081 }
+      # liveness 그룹만(프로세스 생존).
+      httpGet: { path: /actuator/health/liveness, port: 8081 }
       periodSeconds: 20
       failureThreshold: 3
       timeoutSeconds: 3
