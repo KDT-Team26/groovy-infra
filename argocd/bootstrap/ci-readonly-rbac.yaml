@@ -1,0 +1,39 @@
+# 자동 롤백(auto-rollback P3) — GitHub Actions 워크플로가 EKS API 로 배포 상태를 조회할 때
+# 쓰는 read-only RBAC. IAM 역할 groovy-github-actions-eks-readonly 가 EKS 액세스 항목
+# (terraform/github-actions-eks.tf)에서 이 그룹으로 매핑된다.
+#
+# 이 파일은 GitOps 관리 대상이 아니라 install-argocd.sh 가 kubectl apply 로 직접 적용한다.
+# get/list/watch 만 부여 — create/update/patch/delete/exec 는 어디에도 없다.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: groovy-ci-readonly
+  labels:
+    app.kubernetes.io/part-of: auto-rollback
+rules:
+  # ArgoCD Application 의 sync/health 상태 조회
+  - apiGroups: ["argoproj.io"]
+    resources: ["applications"]
+    verbs: ["get", "list", "watch"]
+  # kubectl rollout status / 신·구 ReplicaSet 비교
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: groovy-ci-readonly
+  labels:
+    app.kubernetes.io/part-of: auto-rollback
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: groovy-ci-readonly
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: groovy-ci-readonly
