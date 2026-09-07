@@ -83,7 +83,7 @@ deploy-verify.yml
 | 변수 | 값 | 의미 |
 |---|---|---|
 | `AUTO_ROLLBACK_ENABLED` | `true` / `false` | 전역 킬 스위치. `false` 면 검증·last-good 마킹만 하고 롤백 안 함 |
-| `AUTO_ROLLBACK_SERVICES` | 예: `content-service study-service` | 자동 롤백을 켤 서비스(공백/쉼표 구분). 게이트(P6) 통과분만 |
+| `AUTO_ROLLBACK_SERVICES` | 예: `content-service study-service` / 비활성 시 `none` | 자동 롤백을 켤 서비스(공백/쉼표 구분). 게이트(P6) 통과분만. GitHub Actions 변수는 빈 값을 못 받으므로 "없음"은 `none` 으로 둔다 |
 
 **GitHub secret**: `DISCORD_WEBHOOK_URL` — deploy-verify/rollback 워크플로의 Discord 알림용
 (ArgoCD notifications 의 ESO 시크릿과 별개).

@@ -37,6 +37,8 @@ case "$RESULT" in
 esac
 
 # 2) 킬 스위치 / 화이트리스트 (auto 모드에서만)
+# GitHub Actions 변수는 빈 값을 허용하지 않으므로, "활성 서비스 없음"은 'none' 으로 표기한다.
+[ "$AUTO_SERVICES" = "none" ] && AUTO_SERVICES=""
 if [ "$MODE" = "auto" ]; then
   if [ "$AUTO_ENABLED" != "true" ]; then
     REASON="AUTO_ROLLBACK_ENABLED != true — detect-only 모드"; finish
