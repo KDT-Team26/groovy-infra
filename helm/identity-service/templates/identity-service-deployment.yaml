@@ -9,6 +9,8 @@ spec:
   # maxUnavailable:0 은 replica=1 에서도 유효하다 — 새 Pod가 Ready 된 뒤에야 구 Pod를 내린다
   # (maxSurge:1 이 순간적으로 2개를 허용). replica>=2 HA 전환은 #91(values-ha.yaml) 참고.
   revisionHistoryLimit: {{ .Values.identityService.rollout.revisionHistoryLimit }}
+  # 자동 롤백(auto-rollback P1c): 감지 단축용. 값 근거는 values.yaml 주석 참고.
+  progressDeadlineSeconds: {{ .Values.identityService.rollout.progressDeadlineSeconds }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
