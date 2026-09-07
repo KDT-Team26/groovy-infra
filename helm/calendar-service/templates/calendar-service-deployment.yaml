@@ -7,9 +7,6 @@ metadata:
 spec:
   # 롤아웃 안전장치(#90) — 상세 설명은 identity-service-deployment.yaml 참고.
   revisionHistoryLimit: {{ .Values.calendarService.rollout.revisionHistoryLimit }}
-  # 자동 롤백(auto-rollback P1): 새 ReplicaSet이 이 시간 내 Available되지 않으면 배포 실패로 간주
-  # → ArgoCD Degraded. 기본 600s를 줄여 감지를 앞당긴다.
-  progressDeadlineSeconds: {{ .Values.calendarService.rollout.progressDeadlineSeconds }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
