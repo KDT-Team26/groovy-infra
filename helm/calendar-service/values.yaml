@@ -10,6 +10,9 @@ calendarService:
     revisionHistoryLimit: 5
     maxUnavailable: 0
     maxSurge: 1
+    # 자동 롤백(auto-rollback P1): 새 Pod가 Ready되지 못하는 배포를 기본 600s 대신 180s 만에
+    # ProgressDeadlineExceeded로 판정 → ArgoCD Degraded 전환·감지가 3분 내로 빨라진다.
+    progressDeadlineSeconds: 180
   probes:
     enabled: true
     startup:
@@ -17,12 +20,15 @@ calendarService:
       periodSeconds: 10
       failureThreshold: 30
     readiness:
-      httpGet: { path: /actuator/health, port: 8084 }
+      # 자동 롤백(auto-rollback P1): readiness 그룹만 확인한다. DB/Kafka/Redis 등 외부 의존성은
+      # 제외 — 의존성 블립이 롤아웃을 막거나 오탐 롤백을 유발하지 않게 한다.
+      httpGet: { path: /actuator/health/readiness, port: 8084 }
       periodSeconds: 10
       failureThreshold: 3
       timeoutSeconds: 3
     liveness:
-      httpGet: { path: /actuator/health, port: 8084 }
+      # liveness 그룹만 확인(프로세스 생존). 의존성 DOWN으로 컨테이너가 재시작되지 않게 한다.
+      httpGet: { path: /actuator/health/liveness, port: 8084 }
       periodSeconds: 20
       failureThreshold: 3
       timeoutSeconds: 3
