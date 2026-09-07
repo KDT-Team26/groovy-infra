@@ -117,16 +117,31 @@ Discord 에 "무엇을·왜 롤백했는지 + 근거(신·구 RS 상태, 의존�
 
 각 Phase = 이슈 1개, `feat(#N): ...` 커밋, 완료 후 다음 Phase (팀 GitOps 워크플로).
 
-### P1 — 감지 신뢰성
+### P1 — 감지 신뢰성  *(완료. 2026-09-07 — 아래 순서로 재작업됨)*
 
-- `livenessProbe.httpGet.path` → `/actuator/health/liveness`, `readinessProbe.httpGet.path` →
-  `/actuator/health/readiness`. `startupProbe` 는 통합 `/actuator/health` 유지.
-  - 전제: 각 서비스가 Spring Boot health group 을 노출해야 함
-    (`management.endpoint.health.probes.enabled=true`, k8s 프로필 기본값). 미노출 서비스는
-    서비스 레포 `application.yml` 에 설정 추가 (P1 하위 작업, 서비스 레포 수정).
-- `rollout.progressDeadlineSeconds: 180` 값 추가 + Deployment 템플릿에 `spec.progressDeadlineSeconds`
-  렌더. Degraded 전환 10분 → 3분.
-- 1개 서비스 선적용 → 콜드스타트가 180s 안에 드는지 실측 후 5개 반영.
+> **주의**: probe 경로 분리를 helm 에서 먼저 하면 안 된다. 각 서비스 `SecurityConfig` 가
+> 리터럴 `"/actuator/health"` 만 permit 하고 `/actuator/health/**` 는 401 → 새 pod 가
+> liveness 401 CrashLoop → 롤아웃 정지. (2026-09-07 실제 발생, revert #174/#175 로 복구.)
+> **permit 을 먼저 배포·검증한 뒤에 helm 경로를 분리한다.**
+
+**P1a — 백엔드 permit + health 그룹** (서비스 레포, `main` 직접 push, 팀 승인):
+- `services/<svc>/.../config/SecurityConfig.java` `PERMIT_ALL_PATTERNS` 에 `"/actuator/health/**"` 추가.
+- `application.yml` `management.endpoint.health` 에 `probes.enabled: true` + `group.{liveness,readiness}`.
+- 배포 후 pod 안에서 `wget /actuator/health/liveness` → **200** 확인 (5개 전부).
+
+**P1b — 콜드스타트 실측**: P1a 롤아웃 때 신규 pod `Started → Ready` 시간 측정.
+근거: [`auto-rollback-coldstart-measurements.md`](./auto-rollback-coldstart-measurements.md).
+결과: 관측 최대 85s(content), identity 는 17~18s, 전형값 ≈ 67s.
+
+**P1c — helm probe 분리** (infra, content-service 먼저 → 나머지 4개 batch):
+- `readinessProbe` → `/actuator/health/readiness`, `livenessProbe` → `/actuator/health/liveness`,
+  `startupProbe` 는 통합 `/actuator/health` 유지.
+- `startup.failureThreshold` 30 → **18** (예산 300s → 180s; 실측 최대의 2.1x).
+- `rollout.progressDeadlineSeconds: 240` (startup 예산 초과 → 거짓 실패 방지, 기본 600s 대비 단축)
+  + Deployment 템플릿 `spec.progressDeadlineSeconds` 렌더.
+- 각 서비스 새 pod probe 경로 확인 + content-service `deploy-verify` 스모크 `healthy` 확인.
+
+**P1d — 문서**: 이 절 + `auto-rollback.md` 반영.
 
 ### P2 — `rollback.yml` 견고화 (트리거는 아직 수동)
 
