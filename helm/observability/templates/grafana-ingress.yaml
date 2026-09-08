@@ -1,0 +1,36 @@
+# 그라파나 UI 외부 노출(#193 B안 후속) — albGroupName이 비어있으면 통째로 렌더링되지 않는다
+# (values.yaml 기본값 "" — 지금 이 파일이 배포돼도 실제 적용 전까지는 아무 영향 없음).
+#
+# argocd-ingress.yaml과 같은 group.name으로 기존 ALB(istio-ingressgateway 것)에 합류한다 —
+# 전용 ALB를 새로 만들지 않는다. 헬스체크는 Grafana 자체 상태 엔드포인트를 쓴다.
+{{- if .Values.grafana.ingress.albGroupName }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: {{ .Values.grafana.ingress.certificateArn | quote }}
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /api/health
+    # helm/istio-gateway/values.yaml의 istioGateway.albGroupName / argocd-ingress.yaml의
+    # group.name과 반드시 동일한 값.
+    alb.ingress.kubernetes.io/group.name: {{ .Values.grafana.ingress.albGroupName }}
+spec:
+  ingressClassName: alb
+  rules:
+    - host: {{ .Values.grafana.ingress.domain | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: {{ .Values.grafana.port }}
+{{- end }}

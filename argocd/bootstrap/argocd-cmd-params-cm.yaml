@@ -1,0 +1,27 @@
+# ArgoCD 웹훅(#193 B안) + UI 외부 노출 — argocd-server 서버 기동 파라미터.
+#
+# ⚠️ server.insecure 는 argocd-cm(앱 레벨 설정)이 아니라 이 ConfigMap
+# (argocd-cmd-params-cm, 서버 기동 파라미터 전용 — --insecure 커맨드라인 플래그와 동급)에
+# 넣어야 실제로 적용된다. argocd-cm에 넣으면 조용히 무시되고 argocd-server는 계속
+# TLS 모드(tls: true, 로그로 확인 가능)로 떠서, ALB가 평문 HTTP로 보내는 요청/헬스체크를
+# 내부 TLS multiplexer가 "https://<host>/"로 307 리다이렉트해버린다 — ALB 헬스체크는
+# 리다이렉트를 못 따라가서 타겟그룹이 unhealthy로 잡힌다(실제 이 실수로 한 번 겪음).
+#
+# argocd-server는 기본적으로 8080 포트에서 자체 TLS(자체서명)를 서빙한다. ALB(argocd-ingress.yaml)가
+# TLS를 종료하고 평문 HTTP로 넘기는 구조라, argocd-server도 평문으로 받도록 이 값이 필요하다.
+# (istio-ingressgateway의 HTTP-only 패턴과 동일한 이유.)
+#
+# 반영: kubectl apply -f argocd/bootstrap/argocd-cmd-params-cm.yaml
+#      kubectl rollout restart deployment argocd-server -n argocd
+# 반영 확인: kubectl logs -n argocd -l app.kubernetes.io/name=argocd-server --tail=10 | grep "serving on port"
+#          → "tls: false" 여야 정상.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-cmd-params-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  server.insecure: "true"
