@@ -42,6 +42,15 @@ grafana:
     pullPolicy: IfNotPresent
     tag: "11.1.0"
   port: 3000
+  # 그라파나 UI 외부 노출(#193 B안 후속) — argocd-ingress.yaml/istio-gateway와 같은 방식으로
+  # 기존 ALB를 IngressGroup으로 공유한다(전용 ALB 신설 아님). albGroupName이 비어있으면
+  # templates/grafana-ingress.yaml이 아예 렌더링되지 않는다 — 지금 이 값을 커밋해도 실제
+  # 적용 전까지는 영향 없음. 세 Ingress(istio-gateway/argocd/grafana)의 albGroupName은
+  # 반드시 전부 동일해야 한다. 적용 순서는 docs/argocd-webhook-setup.md 참고.
+  ingress:
+    albGroupName: "groovy-shared-alb"
+    domain: "grafana.groovy-team26.com"
+    certificateArn: "arn:aws:acm:ap-northeast-2:665206375378:certificate/53b0e46b-f65d-4c8e-9944-a204b3b085a0"
 
 tempo:
   replicaCount: 1

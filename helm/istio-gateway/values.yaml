@@ -1,11 +1,20 @@
-# api-gateway/values.yaml의 certificateArn/domain과 동일한 값 — 같은 도메인
-# (api.groovy-team26.com)을 당분간 두 ALB(api-gateway, istio-ingressgateway)가
-# 함께 참조하는 과도기 상태. 4-7(카나리 전환) 이후 terraform/dns.tf의
-# aws_route53_record.api가 이 ALB를 가리키도록 바꾸고, 4-8에서 api-gateway 쪽을
-# 제거하면 이 값들은 istio-gateway 쪽에만 남는다.
+# api-gateway는 4-8에서 완전히 제거됐고(helm/api-gateway 차트 삭제, terraform/dns.tf가
+# istio-ingressgateway ALB만 참조) 이 값들은 istio-gateway 단독 소유다.
 istioGateway:
   certificateArn: "arn:aws:acm:ap-northeast-2:665206375378:certificate/c9b76a77-3c46-447a-a73e-81e5d05ceadc"
   domain: "api.groovy-team26.com"
   # api-gateway/values.yaml의 config.corsAllowedOrigins와 동일한 값 — 원본 CorsConfig.java
   # (CorsFilter, allowCredentials=true)를 VirtualService corsPolicy로 그대로 옮긴다.
   corsAllowedOrigins: "http://beancp.com:5173,https://www.groovy-team26.com"
+  # ArgoCD 웹훅(#193 B안) — argocd-server 노출용 Ingress(argocd/bootstrap/argocd-ingress.yaml)와
+  # 같은 값을 써서 AWS Load Balancer Controller가 두 Ingress를 하나의 ALB로 묶게(IngressGroup)
+  # 한다. 향후 Grafana/ArgoCD UI 서브도메인도 같은 그룹에 합류시킬 계획이라 이름을 서비스
+  # 중립적으로 잡았다. 이 값을 넣기 전까지는 원래대로 이 Ingress 단독(암묵적 그룹, 기존 ALB
+  # 그대로) 유지 — 비워두면(terraform apply/kubectl apply 전) 아무 영향 없다.
+  #
+  # 적용 시 반드시 terraform/dns.tf 의 data.aws_lb.api_gateway 태그 필터
+  # (ingress.k8s.aws/stack)도 이 값으로 같이 바꿔야 한다 — 그룹으로 묶이면 ALB의 그 태그값이
+  # "<namespace>/<ingress이름>"에서 그룹명으로 바뀐다. 순서: 이 값 설정 → helm 반영 →
+  # ALB 태그 변경 확인 → terraform 쪽 태그 필터 갱신 → apply. 자세한 순서는
+  # docs/argocd-webhook-setup.md 참고.
+  albGroupName: "groovy-shared-alb"
