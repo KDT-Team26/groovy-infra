@@ -13,6 +13,21 @@
 - 클러스터: EKS `groovy-eks-cluster`, ARM64 Graviton `t4g.medium`, 5개 서비스 HA(replica≥2).
 
 ---
+### 테스트 시, 장애 복구까지 약 5분 가량 걸림
+"5분 45초"는 CI가 나쁜 커밋을 올린 순간이 아니라, 그 나쁜 이미지가 실제로 서비스에 반영된(장애가 시작된) 시점부터, 
+
+감지(degraded 판정) → 가드 통과 → 
+롤백 커밋 → ArgoCD 재동기화 → 새 이미지 Ready → 재검증 Healthy 확정까지
+
+| 시각(UTC)| 이벤트  | 
+|---|---|
+| 13:43:20 | repository_dispatch 전송, bad 태그 bump 커밋 push — 여기부터 재는 게 아님  |
+| 13:46:46   | ArgoCD가 나쁜 태그를 실제 배포(새 Pod ImagePullBackOff) — 측정 시작점   |
+| 13:50:48  | progressDeadlineSeconds:240 초과, ArgoCD Degraded  |
+| 13:51:04  |deploy-verify.sh 판정 degraded 확정     |
+| 13:51:15  |rollback-core가 revert(content-service) 커밋 push (last-good 태그로)         |
+| 13:52:31  |ArgoCD 재sync 완료, running_tag가 last-good으로 바뀌고 health=Healthy    |
+| 13:52:33  |재검증(re-verify) >>> 판정: healthy 확정 — 측정 종료점     |
 
 ## content-service — 2026-09-07 07:51~07:56 UTC · image `bcc07ee2…`
 

@@ -1,21 +1,5 @@
 #!/usr/bin/env bash
-# 자동 롤백(auto-rollback P4) — 배포 health 판정.
-#
-# EXPECT_SHA(= infra 태그 bump 커밋)가 설정한 이미지 태그로 Deployment 가 실제 굴러가고,
-# ArgoCD Application 이 Healthy 이며, 롤아웃이 완료됐는지 폴링한다.
-#
-#   판정 결과를 GITHUB_OUTPUT 의 result 로 내보낸다:
-#   healthy      — 기대 이미지로 배포됐고 Healthy + 롤아웃 완료
-#   degraded     — 기대 이미지로 배포됐으나 Degraded + 롤아웃 실패 (배포 탓으로 확정)
-#   timeout      — 제한 시간 내 어느 쪽으로도 확정되지 않음 (아직 Progressing 등)
-#   inconclusive — 클러스터/ArgoCD 조회 실패, 또는 기대 태그를 해석 못 함 (판정 불가)
-#
-# 주의: ArgoCD Application 의 status.sync.revision 은 "이 앱 경로를 바꾼 커밋"이 아니라
-#       tracking 브랜치(main)의 현재 HEAD 다. 다중 서비스 환경에서는 bump 커밋 직후에도
-#       다른 커밋이 쌓여 어긋나므로, revision 대신 "배포된 이미지 태그"로 판정한다.
-#
-# 필요 env: SERVICE, EXPECT_SHA
-# 선택 env: APP_NAMESPACE, ARGOCD_NAMESPACE, VERIFY_TIMEOUT_SECONDS
+
 set -uo pipefail
 
 : "${SERVICE:?SERVICE 필요}"

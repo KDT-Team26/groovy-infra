@@ -1,13 +1,12 @@
-# 수동 롤백 워크플로 (break-glass)
+# 수동 롤백
 #
 # 배포본이 장애를 유발했을 때 해당 서비스의 이미지 태그를 되돌린다.
 # 사람이 이 워크플로를 실행한 것 자체가 main 직접 push 에 대한 승인이다.
-# 자동 롤백은 deploy-verify.yml 이 같은 코어 로직(.github/actions/rollback-core)을 호출한다.
 
 name: Rollback service image tag
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # 수동 실행 트리거 버튼
     inputs:
       service:
         description: 롤백할 서비스(= helm/<service> 디렉토리명)

@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
-# 자동 롤백(auto-rollback P5) — 롤백 실행 여부 판단.
-#
-# "불확실은 롤백하지 않는다 / 새 리비전에 귀속되는 신호에서만 롤백한다" 원칙을 코드로.
-# 결과를 GITHUB_OUTPUT 의 decision / reason 으로 내보낸다:
-#   decision = rollback       — 배포 실패 확정 + 모든 가드·크로스체크 통과
-#   decision = abstain        — 롤백하지 않음 (사유는 reason). 알림만.
-#   decision = circuit_break  — 최근 롤백 과다 → 자동 롤백 중단, 수동 개입 필요
-#
-# 필요 env: SERVICE, INFRA_SHA, MODE(manual|auto), RESULT(verify-deploy.sh 결과)
-# 선택 env: AUTO_ENABLED, AUTO_SERVICES, APP_NAMESPACE, ARGOCD_NAMESPACE
+
 set -uo pipefail
 
 : "${SERVICE:?}"; : "${INFRA_SHA:?}"; : "${MODE:?}"; : "${RESULT:?}"
