@@ -29,8 +29,11 @@
 
 ## 3. 시스템 아키텍처
 
-```
-```
+![시스템 아키텍처](images/sys_architecture.png)
+
+## 4. GitOps 파이프라인 아키텍쳐
+
+![GitOps 파이프라인](images/GitOps_pipeline.png)
 
 ### 롤백 파이프라인 흐름
 
@@ -45,7 +48,8 @@
                           main에 push → ArgoCD 재동기화 → 재검증 → Discord ↩️/🚨
 ```
 
-## 4. 기술 스택
+
+## 5. 기술 스택
 
 - **Terraform**
 - **Helm 3**
