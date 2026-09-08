@@ -50,7 +50,7 @@ calendarService:
     minReplicas: 1
     maxReplicas: 2
     targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
   database:
     host: groovy-rds-mysql.cjmu2is60j25.ap-northeast-2.rds.amazonaws.com
     port: 3306
