@@ -1,16 +1,4 @@
-# 자동 롤백(auto-rollback P5) — 배포 검증 → last-good 마킹 → (실패 시) 자동 롤백
-#
-# 트리거:
-#   - repository_dispatch(type=deploy-verify): 서비스 레포 CI 가 배포 후 호출 (mode=auto)
-#   - workflow_dispatch: 사람이 직접 실행 (mode=manual)
-#
-# 안전장치:
-#   - 킬 스위치   : vars.AUTO_ROLLBACK_ENABLED == 'true' 여야 auto 롤백. 아니면 detect-only.
-#   - 화이트리스트: vars.AUTO_ROLLBACK_SERVICES 에 있는 서비스만.
-#   - 루프 차단   : 대상 커밋이 revert(...) 면 롤백 안 함. auto 는 봇 이미지 bump 커밋만.
-#   - 서킷 브레이커: 최근 6h revert 과다 시 중단.
-#   - 크로스체크  : 이전 RS 생존 / 공유 의존성 health / 클러스터 알림 → 배포 무관 장애면 abstain.
-#   - 불확실 시   : verify=timeout/inconclusive → 롤백 안 함, 알림만.
+# 자동 롤백(auto-rollback) — 배포 검증 → last-good 마킹 → (실패 시) 자동 롤백
 
 name: Verify deploy & auto-rollback
 
