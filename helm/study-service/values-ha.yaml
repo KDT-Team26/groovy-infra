@@ -4,7 +4,7 @@ studyService:
   replicaCount: 2   # hpa.enabled=true 라 실제로는 아래 hpa.minReplicas가 적용됨(hpa 끄게 될 경우 대비)
   hpa:
     minReplicas: 2
-    maxReplicas: 4
+    maxReplicas: 6
   pdb:
     enabled: true
     minAvailable: 1
