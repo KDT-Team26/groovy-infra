@@ -51,7 +51,7 @@ resource "aws_acm_certificate_validation" "api" {
 data "aws_lb" "api_gateway" {
   tags = {
     "elbv2.k8s.aws/cluster" = "groovy-eks-cluster"
-    "ingress.k8s.aws/stack" = "istio-system/istio-ingressgateway"
+    "ingress.k8s.aws/stack" = "groovy-shared-alb"
   }
 }
 
@@ -117,19 +117,17 @@ resource "aws_acm_certificate_validation" "argocd" {
   ]
 }
 
-# 위 순서 3번이 끝나 data.aws_lb.api_gateway 가 그룹 ALB를 정상 조회하게 된 뒤에 주석 해제.
-# (그 전엔 이 레코드가 가리킬 ALB를 아직 특정할 수 없어 apply 시 에러가 난다.)
-# resource "aws_route53_record" "argocd" {
-#   zone_id = aws_route53_zone.primary.zone_id
-#   name    = "argocd.${var.domain_name}"
-#   type    = "A"
-#
-#   alias {
-#     name                   = "dualstack.${data.aws_lb.api_gateway.dns_name}"
-#     zone_id                = data.aws_lb.api_gateway.zone_id
-#     evaluate_target_health = true
-#   }
-# }
+resource "aws_route53_record" "argocd" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "argocd.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = "dualstack.${data.aws_lb.api_gateway.dns_name}"
+    zone_id                = data.aws_lb.api_gateway.zone_id
+    evaluate_target_health = true
+  }
+}
 
 resource "aws_acm_certificate" "grafana" {
   domain_name       = "grafana.${var.domain_name}"
@@ -164,15 +162,14 @@ resource "aws_acm_certificate_validation" "grafana" {
   ]
 }
 
-# 위 순서 3번(태그 필터 갱신) 완료 후 주석 해제 — argocd 레코드와 동일한 이유.
-# resource "aws_route53_record" "grafana" {
-#   zone_id = aws_route53_zone.primary.zone_id
-#   name    = "grafana.${var.domain_name}"
-#   type    = "A"
-#
-#   alias {
-#     name                   = "dualstack.${data.aws_lb.api_gateway.dns_name}"
-#     zone_id                = data.aws_lb.api_gateway.zone_id
-#     evaluate_target_health = true
-#   }
-# }
+resource "aws_route53_record" "grafana" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name    = "grafana.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = "dualstack.${data.aws_lb.api_gateway.dns_name}"
+    zone_id                = data.aws_lb.api_gateway.zone_id
+    evaluate_target_health = true
+  }
+}
