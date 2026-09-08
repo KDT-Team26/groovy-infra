@@ -2,11 +2,6 @@
 #
 # rollback.yml(수동 break-glass)과 deploy-verify.yml(자동)이 공유한다.
 # 하는 일: 대상 태그 해석 → values.yaml 치환 → helm 렌더 검증 → main 에 rebase-safe push.
-#
-# 호출 측 전제조건:
-#   - actions/checkout 으로 groovy-infra main 이 fetch-depth: 0 으로 체크아웃돼 있을 것
-#   - (선택) AWS 자격증명이 구성돼 있으면 ECR 이미지 존재를 강제 검증, 없으면 경고 후 skip
-#   - helm 은 없으면 이 액션이 설치한다
 
 name: rollback-core
 description: groovy-infra 서비스 이미지 태그를 안전하게 되돌린다
