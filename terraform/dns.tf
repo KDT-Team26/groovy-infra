@@ -66,3 +66,113 @@ resource "aws_route53_record" "api" {
     evaluate_target_health = true
   }
 }
+
+# ArgoCD 웹훅(#193 B안) + ArgoCD UI + 그라파나 UI 외부 노출 — 셋 다 같은 ALB를
+# IngressGroup으로 공유한다(argocd.groovy-team26.com, grafana.groovy-team26.com).
+#
+# ⚠️ 미완성/미적용 상태. 아래 리소스는 helm/istio-gateway 의 albGroupName 설정,
+# argocd/bootstrap/argocd-ingress.yaml, helm/observability(그라파나 Ingress) 적용과 세트로
+# 묶여 있다 — 순서를 지키지 않으면 data.aws_lb.api_gateway 조회가 깨지거나(태그값이 그룹명으로
+# 바뀌므로) 이 레코드들이 가리킬 ALB가 없는 상태로 apply될 수 있다. 적용 순서는
+# docs/argocd-webhook-setup.md 참고.
+#
+# 순서 요약:
+#   1) helm/istio-gateway/values.yaml + helm/observability/values.yaml 의 albGroupName을
+#      동일한 값으로 설정 + 각 Ingress의 certificate-arn을 아래 인증서 발급 후 채움
+#   2) 세 Ingress(istio-gateway/argocd/grafana)를 반영 → AWS Load Balancer Controller가
+#      그룹으로 재구성 → ALB의 ingress.k8s.aws/stack 태그가 albGroupName 값으로 바뀌는 것을
+#      콘솔/CLI로 확인
+#   3) 그제서야 아래 data.aws_lb.api_gateway 의 태그 필터 값을 albGroupName 으로 갱신
+#   4) terraform apply (이 파일의 신규 리소스 + 3번 변경 함께)
+resource "aws_acm_certificate" "argocd" {
+  domain_name       = "argocd.${var.domain_name}"
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-argocd-certificate"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_route53_record" "argocd_certificate_validation" {
+  allow_overwrite = true
+  zone_id         = aws_route53_zone.primary.zone_id
+  name            = tolist(aws_acm_certificate.argocd.domain_validation_options)[0].resource_record_name
+  type            = tolist(aws_acm_certificate.argocd.domain_validation_options)[0].resource_record_type
+  ttl             = 60
+  records = [
+    tolist(aws_acm_certificate.argocd.domain_validation_options)[0].resource_record_value
+  ]
+}
+
+resource "aws_acm_certificate_validation" "argocd" {
+  certificate_arn = aws_acm_certificate.argocd.arn
+  validation_record_fqdns = [
+    aws_route53_record.argocd_certificate_validation.fqdn
+  ]
+}
+
+# 위 순서 3번이 끝나 data.aws_lb.api_gateway 가 그룹 ALB를 정상 조회하게 된 뒤에 주석 해제.
+# (그 전엔 이 레코드가 가리킬 ALB를 아직 특정할 수 없어 apply 시 에러가 난다.)
+# resource "aws_route53_record" "argocd" {
+#   zone_id = aws_route53_zone.primary.zone_id
+#   name    = "argocd.${var.domain_name}"
+#   type    = "A"
+#
+#   alias {
+#     name                   = "dualstack.${data.aws_lb.api_gateway.dns_name}"
+#     zone_id                = data.aws_lb.api_gateway.zone_id
+#     evaluate_target_health = true
+#   }
+# }
+
+resource "aws_acm_certificate" "grafana" {
+  domain_name       = "grafana.${var.domain_name}"
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-grafana-certificate"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_route53_record" "grafana_certificate_validation" {
+  allow_overwrite = true
+  zone_id         = aws_route53_zone.primary.zone_id
+  name            = tolist(aws_acm_certificate.grafana.domain_validation_options)[0].resource_record_name
+  type            = tolist(aws_acm_certificate.grafana.domain_validation_options)[0].resource_record_type
+  ttl             = 60
+  records = [
+    tolist(aws_acm_certificate.grafana.domain_validation_options)[0].resource_record_value
+  ]
+}
+
+resource "aws_acm_certificate_validation" "grafana" {
+  certificate_arn = aws_acm_certificate.grafana.arn
+  validation_record_fqdns = [
+    aws_route53_record.grafana_certificate_validation.fqdn
+  ]
+}
+
+# 위 순서 3번(태그 필터 갱신) 완료 후 주석 해제 — argocd 레코드와 동일한 이유.
+# resource "aws_route53_record" "grafana" {
+#   zone_id = aws_route53_zone.primary.zone_id
+#   name    = "grafana.${var.domain_name}"
+#   type    = "A"
+#
+#   alias {
+#     name                   = "dualstack.${data.aws_lb.api_gateway.dns_name}"
+#     zone_id                = data.aws_lb.api_gateway.zone_id
+#     evaluate_target_health = true
+#   }
+# }
