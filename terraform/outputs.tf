@@ -76,3 +76,9 @@ output "api_certificate_arn" {
   description = "ARN of the validated ACM certificate for the Groovy backend API."
   value       = aws_acm_certificate_validation.api.certificate_arn
 }
+
+output "cluster_autoscaler_role_arn" {
+  description = "ARN of the IAM role used by Cluster Autoscaler via EKS Pod Identity."
+  value       = aws_iam_role.cluster_autoscaler.arn
+}
+

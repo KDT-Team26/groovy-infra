@@ -1,0 +1,41 @@
+# cluster-autoscaler — 워크로드 부하 및 Pending 파드 발생 시 EKS 워커 노드를 자동 증설/축소
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-autoscaler
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://kubernetes.github.io/autoscaler
+    chart: cluster-autoscaler
+    targetRevision: "9.46.0"
+    helm:
+      values: |
+        fullnameOverride: "cluster-autoscaler"
+        autoDiscovery:
+          clusterName: groovy-eks-cluster
+        awsRegion: ap-northeast-2
+        image:
+          tag: "v1.36.1"
+        extraArgs:
+          scale-down-enabled: true
+          skip-nodes-with-system-pods: false
+          skip-nodes-with-local-storage: false
+          expander: least-waste
+          v: 4
+        rbac:
+          serviceAccount:
+            create: true
+            name: cluster-autoscaler
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -56,6 +56,11 @@ resource "aws_eks_node_group" "this" {
     update_strategy = "DEFAULT"
   }
 
+  tags = {
+    "k8s.io/cluster-autoscaler/${aws_eks_cluster.this.name}" = "owned"
+    "k8s.io/cluster-autoscaler/enabled"                      = "true"
+  }
+
   depends_on = [
     aws_iam_role_policy_attachment.eks_worker_node,
     aws_iam_role_policy_attachment.eks_cni,
