@@ -14,6 +14,7 @@ spec:
       labels:
         app: grafana
     spec:
+      serviceAccountName: grafana
       containers:
         - name: grafana
           image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
