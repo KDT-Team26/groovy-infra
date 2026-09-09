@@ -12,7 +12,7 @@ kafka:
     controllerName: CONTROLLER
     clientPort: 9092
     controllerPort: 9093
-    advertisedHost: kafka
+    advertisedHost: kafka.groovy-application.svc.cluster.local
   security:
     protocolMap: "CONTROLLER:PLAINTEXT,CLIENT:SASL_PLAINTEXT"
     saslEnabledMechanisms: "PLAIN"
