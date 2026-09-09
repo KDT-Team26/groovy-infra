@@ -35,3 +35,11 @@ data:
               matcherRegex: '"traceId":"([0-9a-f]+)"'
               name: TraceID
               url: "$${__value.raw}"
+
+      - name: CloudWatch
+        uid: cloudwatch
+        type: cloudwatch
+        editable: true
+        jsonData:
+          authType: default
+          defaultRegion: ap-northeast-2
