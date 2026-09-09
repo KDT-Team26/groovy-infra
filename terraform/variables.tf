@@ -52,14 +52,9 @@ variable "node_instance_types" {
 variable "node_desired_size" {
   description = "Desired number configured on the existing EKS managed node group."
   type        = number
-  default     = 5
-  # 2026-09-03: t4g.medium 전환(node_instance_types 변경) 이후 재계산, 여유 없는 최소값.
-  # 데몬셋을 제외한 워크로드 파드 수요는 HPA maxReplicas까지 다 찬 최악의 경우 51개,
-  # 메모리 요청 합계는 약 13.8GiB. t4g.medium 1대의 워크로드 가용량은 파드 12자리
-  # (max-pods 17에서 노드당 데몬셋 5개 제외), 메모리 약 3.1GiB(allocatable에서 데몬셋
-  # 오버헤드 제외) — 파드 수 기준 51/12≈4.3, 메모리 기준 13.8/3.1≈4.5, 두 기준 모두
-  # 충족하는 최소값은 5대(올림). 롤링 업데이트(max_unavailable=1) 여유분은 없으므로
-  # 배포 중 일시적으로 파드가 Pending될 수 있음.
+  default     = 4
+  # 평시(HPA 최소 스케일) 워크로드 41개 + 데몬셋 20개 = 총 61개 파드 수용(노드 4대 * 17개 = 68 슬롯 중 7개 여유).
+  # 트래픽 증가로 파드가 증가하여 Pending 상태가 되면 Cluster Autoscaler가 자동으로 노드를 증설(max 8)합니다.
 }
 
 variable "node_min_size" {
