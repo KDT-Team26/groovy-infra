@@ -68,7 +68,7 @@ identityService:
     username: identity_service
     parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
   dbPool:
-    maxSize: "6"
+    maxSize: "10"
     minIdle: "2"
 
 config:
