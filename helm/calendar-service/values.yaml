@@ -2,7 +2,7 @@ calendarService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
     repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-calendar-service
-    tag: "832ab50d27824f7cd920de6f95158138f0a71f1c"
+    tag: "f4afc6dfa6dd846d9cc0390a939b7f2e66fecaf9"
     pullPolicy: IfNotPresent
   port: 8084
   # 롤아웃 안전장치 + health probe(#90) — 상세 설명은 identity-service/values.yaml 참고.
