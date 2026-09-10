@@ -14,10 +14,9 @@ data:
             http:
               endpoint: "0.0.0.0:{{ .Values.tempo.otlpHttpPort }}"
 
-    ingester:
-      max_block_duration: {{ .Values.tempo.ingester.maxBlockDuration | default "5m" }}
-      trace_idle_period: {{ .Values.tempo.ingester.traceIdlePeriod | default "10s" }}
-      flush_check_period: {{ .Values.tempo.ingester.flushCheckPeriod | default "10s" }}
+    live_store:
+      max_trace_idle: {{ .Values.tempo.liveStore.maxTraceIdle | default "10s" }}
+      max_block_duration: {{ .Values.tempo.liveStore.maxBlockDuration | default "5m" }}
 
     storage:
       trace:
