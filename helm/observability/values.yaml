@@ -87,10 +87,10 @@ tempo:
   resources:
     requests:
       cpu: "200m"
-      memory: "600Mi"
+      memory: "1Gi"
     limits:
       cpu: "500m"
-      memory: "1Gi"
+      memory: "2560Mi"
 
 loki:
   replicaCount: 1
@@ -105,11 +105,11 @@ loki:
     mountPath: /loki
   resources:
     requests:
-      cpu: "20m"
-      memory: "128Mi"
+      cpu: "50m"
+      memory: "384Mi"
     limits:
-      cpu: "100m"
-      memory: "256Mi"
+      cpu: "200m"
+      memory: "1Gi"
 
 alloy:
   replicaCount: 1
@@ -120,11 +120,11 @@ alloy:
   port: 12345
   resources:
     requests:
-      cpu: "20m"
-      memory: "96Mi"
+      cpu: "30m"
+      memory: "256Mi"
     limits:
-      cpu: "100m"
-      memory: "192Mi"
+      cpu: "150m"
+      memory: "512Mi"
 
 config:
   grafanaAdminUser: "admin"
