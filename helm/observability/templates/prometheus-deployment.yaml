@@ -48,6 +48,10 @@ spec:
             - name: prometheus-data
               mountPath: {{ .Values.prometheus.persistence.mountPath }}
             {{- end }}
+          {{- if .Values.prometheus.resources }}
+          resources:
+            {{- toYaml .Values.prometheus.resources | nindent 12 }}
+          {{- end }}
 
       volumes:
         - name: prometheus-config

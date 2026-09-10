@@ -38,6 +38,10 @@ spec:
               readOnly: true
             - name: storage
               mountPath: /loki
+          {{- if .Values.loki.resources }}
+          resources:
+            {{- toYaml .Values.loki.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: config
           configMap:

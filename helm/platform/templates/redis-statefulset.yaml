@@ -33,6 +33,10 @@ spec:
           volumeMounts:
             - name: groovy-redis-data
               mountPath: /data
+          {{- if .Values.redis.resources }}
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: groovy-redis-data
           persistentVolumeClaim:
