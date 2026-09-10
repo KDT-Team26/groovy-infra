@@ -30,6 +30,10 @@ spec:
             - name: config
               mountPath: /etc/alloy
               readOnly: true
+          {{- if .Values.alloy.resources }}
+          resources:
+            {{- toYaml .Values.alloy.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: config
           configMap:

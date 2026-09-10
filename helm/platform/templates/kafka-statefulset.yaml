@@ -54,6 +54,10 @@ spec:
               mountPath: /tmp/adminclient.conf
               subPath: adminclient.conf
               readOnly: true
+          {{- if .Values.kafka.resources }}
+          resources:
+            {{- toYaml .Values.kafka.resources | nindent 12 }}
+          {{- end }}
               
       volumes:
         - name: groovy-kafka-data

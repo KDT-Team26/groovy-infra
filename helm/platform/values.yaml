@@ -28,6 +28,13 @@ kafka:
     enabled: false
     size: 1Gi
     mountPath: /var/lib/kafka/data
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "700Mi"
+    limits:
+      cpu: "500m"
+      memory: "1000Mi"
 
 redis:
   replicaCount: 1
@@ -38,6 +45,13 @@ redis:
   port: 6379
   persistence:
     size: 100Mi
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "48Mi"
+    limits:
+      cpu: "200m"
+      memory: "96Mi"
 
 config:
   timezone: "Asia/Seoul"

@@ -27,6 +27,10 @@ spec:
             - name: tempo-config
               mountPath: /etc/tempo.yaml
               subPath: tempo.yaml
+          {{- if .Values.tempo.resources }}
+          resources:
+            {{- toYaml .Values.tempo.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: tempo-config
           configMap:
