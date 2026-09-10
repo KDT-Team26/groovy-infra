@@ -10,6 +10,13 @@ kafkaExporter:
     port: 9092
     username: "app"
     saslMechanism: "plain"
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "24Mi"
+    limits:
+      cpu: "50m"
+      memory: "64Mi"
 
 nodeExporter:
   image:
@@ -34,6 +41,13 @@ prometheus:
     enabled: true
     size: 10Gi
     mountPath: /prometheus
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "400Mi"
+    limits:
+      cpu: "300m"
+      memory: "768Mi"
 
 grafana:
   replicaCount: 1
@@ -51,6 +65,13 @@ grafana:
     albGroupName: "groovy-shared-alb"
     domain: "grafana.groovy-team26.com"
     certificateArn: "arn:aws:acm:ap-northeast-2:665206375378:certificate/53b0e46b-f65d-4c8e-9944-a204b3b085a0"
+  resources:
+    requests:
+      cpu: "30m"
+      memory: "100Mi"
+    limits:
+      cpu: "150m"
+      memory: "256Mi"
 
 tempo:
   replicaCount: 1
@@ -60,6 +81,13 @@ tempo:
     tag: "latest"
   httpPort: 3200
   otlpHttpPort: 4318
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "600Mi"
+    limits:
+      cpu: "200m"
+      memory: "1Gi"
 
 loki:
   replicaCount: 1
@@ -72,6 +100,13 @@ loki:
     enabled: true
     size: 10Gi
     mountPath: /loki
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "128Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
 
 alloy:
   replicaCount: 1
@@ -80,6 +115,13 @@ alloy:
     tag: "latest"
     pullPolicy: IfNotPresent
   port: 12345
+  resources:
+    requests:
+      cpu: "20m"
+      memory: "96Mi"
+    limits:
+      cpu: "100m"
+      memory: "192Mi"
 
 config:
   grafanaAdminUser: "admin"
@@ -105,3 +147,10 @@ alertmanager:
     tag: "v0.28.1"
     pullPolicy: IfNotPresent
   port: 9093
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "24Mi"
+    limits:
+      cpu: "50m"
+      memory: "64Mi"

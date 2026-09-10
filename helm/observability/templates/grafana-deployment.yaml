@@ -32,6 +32,10 @@ spec:
               mountPath: /etc/grafana/provisioning/datasources
             - name: grafana-dashboards
               mountPath: /etc/grafana/provisioning/dashboards
+          {{- if .Values.grafana.resources }}
+          resources:
+            {{- toYaml .Values.grafana.resources | nindent 12 }}
+          {{- end }}
       volumes:
         - name: grafana-datasources
           configMap:

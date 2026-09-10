@@ -34,3 +34,7 @@ spec:
             - name: metrics
               containerPort: {{ .Values.kafkaExporter.port }}
               protocol: TCP
+          {{- if .Values.kafkaExporter.resources }}
+          resources:
+            {{- toYaml .Values.kafkaExporter.resources | nindent 12 }}
+          {{- end }}
