@@ -81,10 +81,9 @@ tempo:
     tag: "latest"
   httpPort: 3200
   otlpHttpPort: 4318
-  ingester:
+  liveStore:
+    maxTraceIdle: "10s"
     maxBlockDuration: "5m"
-    traceIdlePeriod: "10s"
-    flushCheckPeriod: "10s"
   resources:
     requests:
       cpu: "200m"
