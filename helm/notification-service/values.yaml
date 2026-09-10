@@ -58,7 +58,7 @@ notificationService:
     username: notification_service
     parameters: "useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
   dbPool:
-    maxSize: "10"
+    maxSize: "4"
     minIdle: "2"
   jwt:
     jwksUrl: "http://identity-service:8081/.well-known/jwks.json"
