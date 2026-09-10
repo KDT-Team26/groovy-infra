@@ -1700,13 +1700,13 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le, job) (rate(hikaricp_connections_acquire_seconds_bucket[5m])))",
+          "expr": "sum by (job) (\n  rate(hikaricp_connections_acquire_seconds_sum{\n    job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"\n  }[5m])\n)\n/\nsum by (job) (\n  rate(hikaricp_connections_acquire_seconds_count{\n    job=~\"identity-service|study-service|content-service|calendar-service|notification-service\"\n  }[5m])\n)",
           "format": "time_series",
-          "legendFormat": "{{job}} acquire p95",
+          "legendFormat": "{{job}} acquire avg",
           "refId": "A"
         }
       ],
-      "title": "HikariCP 커넥션 획득 대기 시간 p95 (Acquire Time)",
+      "title": "HikariCP 커넥션 획득 평균 대기 시간 (Acquire Time)",
       "type": "timeseries"
     },
     {
