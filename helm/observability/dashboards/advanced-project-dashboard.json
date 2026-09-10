@@ -5058,7 +5058,7 @@
               },
               "direction": "backward",
               "editorMode": "code",
-              "expr": "{namespace=~\"$namespace\", container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} | json | __error__=\"\" | level=\"INFO\"",
+              "expr": "{namespace=~\"$namespace\", container=~\".*(identity-service|study-service|content-service|calendar-service|notification-service).*\"} !~ \"(uri=/actuator|uri=/api/notifications/subscribe|Tomcat|Exposing|Hibernate|Initialized|Hikari|Shutdown|Start|Closing|JPA|Schema|Current|Successfully|JDBC|JTA|uri=/.well-known| .*ApplicationContext)\" | json | __error__=\"\" | level=\"INFO\"",
               "hide": false,
               "queryType": "range",
               "refId": "A"
