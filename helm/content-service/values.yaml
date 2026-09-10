@@ -2,7 +2,7 @@ contentService:
   replicaCount: 1 # HA 전환(#91) 시 2 이상. 현재는 미니 PC 자원 제약으로 1 고정
   image:
     repository: 665206375378.dkr.ecr.ap-northeast-2.amazonaws.com/groovy-content-service
-    tag: "84662c97b41a9658be7858b58d089cd22de10beb"
+    tag: "9ac08c5dc6baf5e644dac772eb562580040671f5"
     pullPolicy: IfNotPresent
   port: 8083
   # 롤아웃 안전장치 + health probe(#90) — 상세 설명은 identity-service/values.yaml 참고.
