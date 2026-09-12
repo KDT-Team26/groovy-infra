@@ -69,6 +69,10 @@ studyService:
     url: "http://identity-service:8081"
     connectTimeoutMs: "2000"
     readTimeoutMs: "3000"
+    nameCacheTtlSeconds: "86400"
+  redis:
+    host: redis
+    port: 6379
   kafka:
     bootstrapServers: "kafka:9092"
     securityProtocol: "SASL_PLAINTEXT"
