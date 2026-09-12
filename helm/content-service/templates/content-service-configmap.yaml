@@ -16,9 +16,12 @@ data:
   IDENTITY_SERVICE_URL: {{ .Values.contentService.identityService.url | quote }}
   IDENTITY_SERVICE_CONNECT_TIMEOUT_MS: {{ .Values.contentService.identityService.connectTimeoutMs | quote }}
   IDENTITY_SERVICE_READ_TIMEOUT_MS: {{ .Values.contentService.identityService.readTimeoutMs | quote }}
+  IDENTITY_SERVICE_NAME_CACHE_TTL_SECONDS: {{ .Values.contentService.identityService.nameCacheTtlSeconds | quote }}
   STUDY_SERVICE_URL: {{ .Values.contentService.studyService.url | quote }}
   STUDY_SERVICE_CONNECT_TIMEOUT_MS: {{ .Values.contentService.studyService.connectTimeoutMs | quote }}
   STUDY_SERVICE_READ_TIMEOUT_MS: {{ .Values.contentService.studyService.readTimeoutMs | quote }}
+  REDIS_HOST: {{ .Values.contentService.redis.host | quote }}
+  REDIS_PORT: {{ .Values.contentService.redis.port | quote }}
   KAFKA_BOOTSTRAP_SERVERS: {{ .Values.contentService.kafka.bootstrapServers | quote }}
   KAFKA_SECURITY_PROTOCOL: {{ .Values.contentService.kafka.securityProtocol | quote }}
   KAFKA_SASL_MECHANISM: {{ .Values.contentService.kafka.saslMechanism | quote }}
