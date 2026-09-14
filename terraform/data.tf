@@ -14,15 +14,17 @@ resource "aws_db_instance" "mysql" {
   identifier        = "groovy-rds-mysql"
   engine            = "mysql"
   engine_version    = "8.4.9"
-  instance_class    = "db.t4g.micro"
+  instance_class    = "db.t4g.medium"
+  availability_zone = "ap-northeast-2b"
   allocated_storage = 20
   storage_type      = "gp3"
   storage_encrypted = true
 
   kms_key_id = "arn:aws:kms:ap-northeast-2:665206375378:key/69e8390b-33ac-4018-8821-890ac5ae88cf"
 
-  username = "groovyadmin"
-  port     = 3306
+  username                    = "groovyadmin"
+  manage_master_user_password = true
+  port                        = 3306
 
   db_subnet_group_name   = aws_db_subnet_group.this.name
   vpc_security_group_ids = [aws_security_group.rds.id]
