@@ -87,10 +87,10 @@ tempo:
   resources:
     requests:
       cpu: "200m"
-      memory: "1Gi"
+      memory: "800Mi"
     limits:
       cpu: "500m"
-      memory: "2560Mi"
+      memory: "1000Mi"
 
 loki:
   replicaCount: 1
@@ -106,10 +106,10 @@ loki:
   resources:
     requests:
       cpu: "50m"
-      memory: "384Mi"
+      memory: "128Mi"
     limits:
       cpu: "200m"
-      memory: "1Gi"
+      memory: "256Mi"
 
 alloy:
   replicaCount: 1
