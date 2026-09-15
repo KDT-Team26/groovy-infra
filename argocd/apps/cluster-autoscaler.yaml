@@ -1,4 +1,4 @@
-# cluster-autoscaler — 워크로드 부하 및 Pending 파드 발생 시 EKS 워커 노드를 자동 증설/축소
+# cluster-autoscaler — Karpenter 전환으로 일시 비활성화
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -14,6 +14,7 @@ spec:
     targetRevision: "9.46.0"
     helm:
       values: |
+        replicaCount: 0
         fullnameOverride: "cluster-autoscaler"
         autoDiscovery:
           clusterName: groovy-eks-cluster
